@@ -1,190 +1,989 @@
-
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Ritters Control Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
+
+<html lang="en"><head>  <meta charset="UTF-8" />  <title>Ritters Control Panel</title>  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <style>
+  
     :root {
+  
       --bg-color: #111;
+  
       --text-color: white;
+  
       --btn-bg: linear-gradient(to right, #333, #111);
-      --accent-color: #4caf50;
+  
+      --btn-bg-hover: linear-gradient(to right, #555, #222);
+  
     }
+  
+
+  
     body {
+  
+      font-family: 'Segoe UI', sans-serif;
+  
+      background: linear-gradient(145deg, #111, #1a1a1a);
+  
+      color: var(--text-color);
+  
       margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
+  
+      padding: 2rem;
+  
+      transition: background 0.3s, color 0.3s;
+  
     }
-    h1 {
-      margin-bottom: 20px;
+  
+
+  
+    h1, h2, h3 {
+  
+      text-shadow: 1px 1px 2px #000;
+  
     }
-    .panel {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      width: 100%;
-      max-width: 1200px;
-    }
-    .section {
-      background: #222;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    }
+  
+
+  
     button {
-      background: var(--btn-bg);
-      color: var(--text-color);
+  
+      padding: 0.75rem 1.2rem;
+  
+      font-size: 1rem;
+  
+      margin: 0.5rem 0.5rem 0.5rem 0;
+  
       border: none;
-      padding: 10px;
+  
       border-radius: 8px;
+  
+      background: var(--btn-bg);
+  
+      color: white;
+  
       cursor: pointer;
-      margin-top: 10px;
+  
+      transition: all 0.3s ease;
+  
     }
-    input, textarea {
-      width: 100%;
-      margin-top: 10px;
-      padding: 10px;
-      background: #333;
-      color: var(--text-color);
+  
+
+  
+    button:hover {
+  
+      background: var(--btn-bg-hover);
+  
+      transform: scale(1.05);
+  
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  
+    }
+  
+
+  
+    input[type="color"], input[type="range"] {
+  
+      margin-top: 0.5rem;
+  
+      margin-bottom: 1rem;
+  
+    }
+  
+
+  
+    #clock {
+  
+      font-size: 2rem;
+  
+      font-weight: bold;
+  
+      margin: 1rem 0;
+  
+    }
+  
+
+  
+    #musicPlayerControls {
+  
+      display: flex;
+  
+      gap: 1rem;
+  
+      align-items: center;
+  
+      flex-wrap: wrap;
+  
+      margin-bottom: 1rem;
+  
+    }
+  
+
+  
+    input, textarea, select {
+  
+      font-size: 1rem;
+  
+      padding: 0.5rem;
+  
+      border-radius: 6px;
+  
+      border: none;
+  
+      background-color: #2a2a2a;
+  
+      color: white;
+  
+    }
+  
+
+  
+    .close-btn {
+  
+      position: absolute;
+  
+      top: 1rem;
+  
+      right: 1rem;
+  
+      background: transparent;
+  
+      border: none;
+  
+      font-size: 1.2rem;
+  
+      color: white;
+  
+      cursor: pointer;
+  
+    }
+  
+
+  
+    #journalSection, #notesSection, #calendarSection {
+  
+      position: relative;
+  
+      margin-top: 2rem;
+  
+    }
+  
+
+  
+    #calendarHeader {
+  
+      display: flex;
+  
+      justify-content: space-between;
+  
+      align-items: center;
+  
+      margin-bottom: 1rem;
+  
+    }
+  
+
+  
+    #calendarGrid {
+  
+      display: grid;
+  
+      grid-template-columns: repeat(7, 1fr);
+  
+      gap: 10px;
+  
+    }
+  
+
+  
+    .calendar-day {
+  
       border: 1px solid #444;
+  
+      padding: 1rem;
+  
+      border-radius: 8px;
+  
+      background-color: rgba(255, 255, 255, 0.05);
+  
+      cursor: pointer;
+  
+      min-height: 80px;
+  
+    }
+  
+
+  
+    .calendar-day:hover {
+  
+      background-color: rgba(255, 255, 255, 0.1);
+  
+    }
+  
+
+  
+    .calendar-day .day-number {
+  
+      font-weight: bold;
+  
+    }
+  
+
+  
+    .event {
+  
+      font-size: 0.8rem;
+  
+      margin-top: 0.4rem;
+  
+      background: #333;
+  
+      padding: 0.2rem 0.4rem;
+  
+      border-radius: 6px;
+  
+    }
+  
+
+  
+    #eventModal {
+  
+      position: fixed;
+  
+      top: 50%;
+  
+      left: 50%;
+  
+      transform: translate(-50%, -50%);
+  
+      background-color: #222;
+  
+      padding: 1rem;
+  
+      border-radius: 10px;
+  
+      width: 300px;
+  
+      display: none;
+  
+      z-index: 1000;
+  
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  
+    }
+  
+
+  
+    #eventModal input, #eventModal textarea {
+  
+      margin-bottom: 0.5rem;
+  
+    }
+  
+
+  
+    /* Journal & Notes UI Updates */
+  
+    #notesControls, #journalControls {
+  
+      display: flex;
+  
+      flex-direction: column;
+  
+      gap: 0.5rem;
+  
+      max-width: 500px;
+  
+      margin-bottom: 1rem;
+  
+    }
+  
+
+  
+    #noteEntries, #journalEntries {
+  
+      display: flex;
+  
+      flex-direction: column;
+  
+      gap: 1rem;
+  
+      max-height: 300px;
+  
+      overflow-y: auto;
+  
+      padding-right: 0.5rem;
+  
+    }
+  
+
+  
+    .note, .entry {
+  
+      background-color: #1e1e1e;
+  
+      border-left: 5px solid #6c63ff;
+  
+      padding: 1rem;
+  
+      border-radius: 8px;
+  
+      box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+  
+      position: relative;
+  
+    }
+  
+
+  
+    .note h3, .entry h3 {
+  
+      margin: 0 0 0.5rem;
+  
+    }
+  
+
+  
+    .note p, .entry p {
+  
+      margin: 0.5rem 0;
+  
+    }
+  
+
+  
+    .note button, .entry button {
+  
+      position: absolute;
+  
+      top: 0.5rem;
+  
+      right: 0.5rem;
+  
+      padding: 0.2rem 0.6rem;
+  
+      font-size: 0.8rem;
+  
+      background-color: #ff4d4d;
+  
+      color: white;
+  
+      border: none;
+  
       border-radius: 5px;
+  
+      cursor: pointer;
+  
+      transition: background 0.3s;
+  
     }
-    ul {
-      list-style: none;
-      padding: 0;
+  
+
+  
+    .note button:hover, .entry button:hover {
+  
+      background-color: #e60000;
+  
     }
-  </style>
-</head>
-<body>
-  <h1>Ritter's Control Panel</h1>
-  <div class="panel">
-    <div class="section">
-      <h2>Journal</h2>
-      <textarea id="journalEntry" rows="4" placeholder="Write your journal entry..."></textarea>
-      <button onclick="saveJournal()">Save Entry</button>
-      <ul id="journalList"></ul>
-    </div>
-    <div class="section">
-      <h2>Notes</h2>
-      <textarea id="noteEntry" rows="4" placeholder="Write a note..."></textarea>
-      <button onclick="saveNote()">Save Note</button>
-      <ul id="noteList"></ul>
-    </div>
-    <div class="section">
-      <h2>Stopwatch</h2>
-      <div id="stopwatch">00:00:00.000</div>
-      <button onclick="startStopwatch()">Start</button>
-      <button onclick="pauseStopwatch()">Pause</button>
-      <button onclick="resetStopwatch()">Reset</button>
-    </div>
-    <div class="section">
-      <h2>Music Player</h2>
-      <audio id="musicPlayer" controls>
-        <source src="sample.mp3" type="audio/mp3">
-        Your browser does not support the audio element.
-      </audio>
-    </div>
-  </div>
-  <script>
-    // LocalStorage Helpers
-    const journalKey = 'journal';
-    const notesKey = 'notes';
+  
 
-    const saveToLocalStorage = (key, data) => localStorage.setItem(key, JSON.stringify(data));
-    const loadFromLocalStorage = (key) => JSON.parse(localStorage.getItem(key)) || [];
-
-    // Journal
-    let journal = loadFromLocalStorage(journalKey);
-
-    function saveJournal() {
-      const entry = document.getElementById("journalEntry").value.trim();
-      if (entry) {
-        journal.unshift(entry);
-        saveToLocalStorage(journalKey, journal);
-        document.getElementById("journalEntry").value = "";
-        renderJournal();
-      }
+  
+    .panel-section {
+  
+      background: rgba(255, 255, 255, 0.03);
+  
+      padding: 1.5rem;
+  
+      border-radius: 12px;
+  
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  
     }
+  
+  </style></head><body>  <h1>Ritters's Control Panel</h1><button onclick="changeText()">Click Me!</button>
 
-    function renderJournal() {
-      const list = document.getElementById("journalList");
-      list.innerHTML = "";
-      journal.forEach((entry, index) => {
-        const li = document.createElement("li");
-        li.textContent = entry;
-        list.appendChild(li);
-      });
+<button onclick="toggleMode()">Toggle Light/Dark Mode</button>
+
+<button onclick="showJournal()">Journal</button>
+
+<button onclick="showNotes()">Notes</button>
+
+<button onclick="toggleCalendar()">📅 Calendar</button>
+
+<label for="colorPicker">Pick background color:</label>
+
+  <input type="color" id="colorPicker" onchange="setBackgroundColor(this.value)" />  <div id="clock">--:--:--</div>  <!-- Journal -->  <div id="journalSection" class="panel-section" style="display: none;"><button class="close-btn" onclick="hideJournal()">❌</button>
+
+<h2>📓 Journal</h2>
+
+<div id="journalControls">
+
+  <input type="text" id="entryTitle" placeholder="Title...">
+
+  <textarea id="entryContent" rows="4" placeholder="Write your thoughts..."></textarea>
+
+  <button onclick="addEntry()">Add Entry</button>
+
+</div>
+
+<div id="journalEntries"></div>
+
+  </div>  <!-- Notes -->  <div id="notesSection" class="panel-section" style="display: none;"><button class="close-btn" onclick="hideNotes()">❌</button>
+
+<h2>📝 Notes</h2>
+
+<div id="notesControls">
+
+  <input type="text" id="noteTitle" placeholder="Note title...">
+
+  <textarea id="noteContent" rows="4" placeholder="Write your note..."></textarea>
+
+  <button onclick="addNote()">Add Note</button>
+
+</div>
+
+<div id="noteEntries"></div>
+
+  </div>  <!-- Calendar -->  <div id="calendarSection" class="panel-section" style="display: none;"><div id="calendarHeader">
+
+  <button onclick="prevMonth()">⬅️ Previous</button>
+
+  <h2 id="monthYear"></h2>
+
+  <button onclick="nextMonth()">Next ➡️</button>
+
+</div>
+
+<div id="calendarGrid"></div>
+
+  </div>  <!-- Calendar Modal -->  <div id="eventModal"><h3>Add Event</h3>
+
+<input type="text" id="eventTitle" placeholder="Event title">
+
+<textarea id="eventDescription" placeholder="Description"></textarea>
+
+<button onclick="saveEvent()">Save</button>
+
+<button onclick="closeModal()">Cancel</button>
+
+  </div>  <!-- Music -->  <h2>🎵 Music Player</h2>  <div id="musicPlayerControls"><select id="songSelector" onchange="changeSong()">
+
+  <option value="song1.mp3">Chill Beat</option>
+
+  <option value="song2.mp3">Focus Loop</option>
+
+  <option value="song3.mp3">Victory Tune</option>
+
+</select>
+
+<button onclick="togglePlay()">Play / Pause</button>
+
+<audio id="musicPlayer" controls src="song1.mp3"></audio>
+
+  </div>  <div id="output">Hello there! How’s your day?</div><label for="slider">Change background brightness:</label>
+
+  <input type="range" id="slider" min="0" max="225" oninput="changeBackground(this.value)" />  <!-- Stopwatch -->  <h2>⏱️ Stopwatch</h2>  
+<div id="stopwatchDisplay">00:00:00</div>  
+<div id="stopwatchControls">  
+  <button onclick="startStopwatch()">Start</button>  
+  <button onclick="stopStopwatch()">Stop</button>  
+  <button onclick="resetStopwatch()">Reset</button  
+<div id="lapList" style="margin-top: 1rem;"></div>  
+<button onclick="recordLap()">Lap</button>  
+<button onclick="clearLaps()">Clear Laps</button> <script>
+  
+  const musicPlayer = document.getElementById("musicPlayer");
+  
+  let journal = JSON.parse(localStorage.getItem("journal")) || [];
+  
+  let notes = JSON.parse(localStorage.getItem("notes")) || [];
+  
+  let events = JSON.parse(localStorage.getItem("calendarEvents") || "{}");
+  
+  let currentDate = new Date();
+  
+  let selectedDate = null;
+  
+
+  
+  let isDark = true;
+  
+  let customBackgroundColor = null;
+  
+
+  
+  function changeText() {
+  
+    document.getElementById("output").innerText = "How can I change the world today?";
+  
+  }
+  
+
+  
+  function changeBackground(value) {
+  
+    const brightness = `rgb(${value}, ${value}, ${value})`;
+  
+    document.body.style.background = brightness;
+  
+    customBackgroundColor = brightness;
+  
+    localStorage.setItem("backgroundColor", brightness);
+  
+  }
+  
+
+  
+  function setBackgroundColor(color) {
+  
+    document.body.style.background = color;
+  
+    customBackgroundColor = color;
+  
+    localStorage.setItem("backgroundColor", color);
+  
+  }
+  
+
+  
+  function toggleMode() {
+  
+    isDark = !isDark;
+  
+
+  
+    if (isDark) {
+  
+      document.body.style.background = customBackgroundColor || "linear-gradient(145deg, #111, #1a1a1a)";
+  
+      document.body.style.color = "#fff";
+  
+    } else {
+  
+      document.body.style.background = "#f0f0f0";
+  
+      document.body.style.color = "#000";
+  
     }
+  
 
-    // Notes
-    let notes = loadFromLocalStorage(notesKey);
+  
+    localStorage.setItem("isDark", JSON.stringify(isDark));
+  
+  }
+  
 
-    function saveNote() {
-      const note = document.getElementById("noteEntry").value.trim();
-      if (note) {
-        notes.unshift(note);
-        saveToLocalStorage(notesKey, notes);
-        document.getElementById("noteEntry").value = "";
-        renderNotes();
-      }
+  
+  function changeSong() {
+  
+    const song = document.getElementById("songSelector").value;
+  
+    musicPlayer.src = song;
+  
+    musicPlayer.load();
+  
+    musicPlayer.play();
+  
+  }
+  
+
+  
+  function togglePlay() {
+  
+    if (musicPlayer.paused) {
+  
+      musicPlayer.play();
+  
+    } else {
+  
+      musicPlayer.pause();
+  
     }
+  
+  }
+  
 
-    function renderNotes() {
-      const list = document.getElementById("noteList");
-      list.innerHTML = "";
-      notes.forEach((note, index) => {
-        const li = document.createElement("li");
-        li.textContent = note;
-        list.appendChild(li);
-      });
-    }
+  
+  function updateClock() {
+  
+    const now = new Date();
+  
+    document.getElementById("clock").textContent = now.toLocaleTimeString();
+  
+  }
+  
 
-    // Stopwatch
-    let stopwatchInterval, startTime, elapsedTime = 0;
-    const display = document.getElementById("stopwatch");
-
-    function updateStopwatch() {
-      const now = Date.now();
-      const time = elapsedTime + (now - startTime);
-      const ms = time % 1000;
-      const s = Math.floor(time / 1000) % 60;
-      const m = Math.floor(time / 60000) % 60;
-      const h = Math.floor(time / 3600000);
-      display.textContent = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
-    }
-
-    function startStopwatch() {
-      if (!stopwatchInterval) {
-        startTime = Date.now();
-        stopwatchInterval = setInterval(updateStopwatch, 50);
-      }
-    }
-
-    function pauseStopwatch() {
-      if (stopwatchInterval) {
-        clearInterval(stopwatchInterval);
-        stopwatchInterval = null;
-        elapsedTime += Date.now() - startTime;
-      }
-    }
-
-    function resetStopwatch() {
-      clearInterval(stopwatchInterval);
-      stopwatchInterval = null;
-      elapsedTime = 0;
-      display.textContent = "00:00:00.000";
-    }
-
-    // Init all
+  
+  function addEntry() {
+  
+    const title = document.getElementById("entryTitle").value;
+  
+    const content = document.getElementById("entryContent").value;
+  
+    if (!title || !content) return alert("Both fields are required!");
+  
+    journal.push({ id: Date.now(), title, content });
+  
+    localStorage.setItem("journal", JSON.stringify(journal));
+  
     renderJournal();
+  
+    document.getElementById("entryTitle").value = "";
+  
+    document.getElementById("entryContent").value = "";
+  
+  }
+  
+
+  
+  function deleteEntry(id) {
+  
+    journal = journal.filter(e => e.id !== id);
+  
+    localStorage.setItem("journal", JSON.stringify(journal));
+  
+    renderJournal();
+  
+  }
+  
+
+  
+  function renderJournal() {
+  
+    const container = document.getElementById("journalEntries");
+  
+    container.innerHTML = "";
+  
+    journal.forEach(entry => {
+  
+      const div = document.createElement("div");
+  
+      div.className = "entry";
+  
+      div.innerHTML = `<h3>${entry.title}</h3><p>${entry.content}</p><button onclick="deleteEntry(${entry.id})">Delete</button>`;
+  
+      container.appendChild(div);
+  
+    });
+  
+  }
+  
+
+  
+  function addNote() {
+  
+    const title = document.getElementById("noteTitle").value;
+  
+    const content = document.getElementById("noteContent").value;
+  
+    if (!title || !content) return alert("Both fields are required!");
+  
+    notes.push({ id: Date.now(), title, content });
+  
+    localStorage.setItem("notes", JSON.stringify(notes));
+  
     renderNotes();
-  </script>
-</body>
-</html>
+  
+    document.getElementById("noteTitle").value = "";
+  
+    document.getElementById("noteContent").value = "";
+  
+  }
+  
+
+  
+  function deleteNote(id) {
+  
+    notes = notes.filter(n => n.id !== id);
+  
+    localStorage.setItem("notes", JSON.stringify(notes));
+  
+    renderNotes();
+  
+  }
+  
+
+  
+  function renderNotes() {
+  
+    const container = document.getElementById("noteEntries");
+  
+    container.innerHTML = "";
+  
+    notes.forEach(note => {
+  
+      const div = document.createElement("div");
+  
+      div.className = "note";
+  
+      div.innerHTML = `<h3>${note.title}</h3><p>${note.content}</p><button onclick="deleteNote(${note.id})">Delete</button>`;
+  
+      container.appendChild(div);
+  
+    });
+  
+  }
+  
+
+  
+  function showJournal() {
+  
+    document.getElementById("journalSection").style.display = "block";
+  
+    document.getElementById("notesSection").style.display = "none";
+  
+    document.getElementById("calendarSection").style.display = "none";
+  
+  }
+  
+
+  
+  function showNotes() {
+  
+    document.getElementById("notesSection").style.display = "block";
+  
+    document.getElementById("journalSection").style.display = "none";
+  
+    document.getElementById("calendarSection").style.display = "none";
+  
+  }
+  
+
+  
+  function toggleCalendar() {
+  
+    const section = document.getElementById("calendarSection");
+  
+    const isHidden = section.style.display === "none";
+  
+    section.style.display = isHidden ? "block" : "none";
+  
+    if (isHidden) renderCalendar();
+  
+    document.getElementById("journalSection").style.display = "none";
+  
+    document.getElementById("notesSection").style.display = "none";
+  
+  }
+  
+
+  
+  function hideJournal() {
+  
+    document.getElementById("journalSection").style.display = "none";
+  
+  }
+  
+
+  
+  function hideNotes() {
+  
+    document.getElementById("notesSection").style.display = "none";
+  
+  }
+  
+
+  
+  function renderCalendar() {
+  
+    const year = currentDate.getFullYear();
+  
+    const month = currentDate.getMonth();
+  
+    const firstDay = new Date(year, month, 1).getDay();
+  
+    const lastDate = new Date(year, month + 1, 0).getDate();
+  
+    const grid = document.getElementById("calendarGrid");
+  
+    grid.innerHTML = "";
+  
+
+  
+    document.getElementById("monthYear").textContent = currentDate.toLocaleString("default", { month: "long", year: "numeric" });
+  
+
+  
+    for (let i = 0; i < firstDay; i++) {
+  
+      grid.innerHTML += '<div></div>';
+  
+    }
+  
+
+  
+    for (let day = 1; day <= lastDate; day++) {
+  
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  
+      const div = document.createElement("div");
+  
+      div.className = "calendar-day";
+  
+      div.innerHTML = `<div class="day-number">${day}</div>`;
+  
+      if (events[dateStr]) {
+  
+        events[dateStr].forEach(e => {
+  
+          const evt = document.createElement("div");
+  
+          evt.className = "event";
+  
+          evt.textContent = e.title;
+  
+          div.appendChild(evt);
+  
+        });
+  
+      }
+  
+      div.onclick = () => openModal(dateStr);
+  
+      grid.appendChild(div);
+  
+    }
+  
+  }
+  
+
+  
+  function prevMonth() {
+  
+    currentDate.setMonth(currentDate.getMonth() - 1);
+  
+    renderCalendar();
+  
+  }
+  
+
+  
+  function nextMonth() {
+  
+    currentDate.setMonth(currentDate.getMonth() + 1);
+  
+    renderCalendar();
+  
+  }
+  
+
+  
+  function openModal(dateStr) {
+  
+    selectedDate = dateStr;
+  
+    document.getElementById("eventModal").style.display = "block";
+  
+    document.getElementById("eventTitle").value = "";
+  
+    document.getElementById("eventDescription").value = "";
+  
+  }
+  
+
+  
+  function closeModal() {
+  
+    document.getElementById("eventModal").style.display = "none";
+  
+  }
+  
+
+  
+  function saveEvent() {
+  
+    const title = document.getElementById("eventTitle").value;
+  
+    const description = document.getElementById("eventDescription").value;
+  
+    if (!title) return alert("Title is required!");
+  
+    if (!events[selectedDate]) events[selectedDate] = [];
+  
+    events[selectedDate].push({ title, description });
+  
+    localStorage.setItem("calendarEvents", JSON.stringify(events));
+  
+    closeModal();
+  
+    renderCalendar();
+  
+  }
+  
+
+  
+  window.onload = function () {
+  
+    const savedColor = localStorage.getItem("backgroundColor");
+  
+    const savedDarkMode = JSON.parse(localStorage.getItem("isDark"));
+  
+
+  
+    if (savedColor) {
+  
+      document.body.style.background = savedColor;
+  
+      document.getElementById("colorPicker").value = savedColor;
+  
+      customBackgroundColor = savedColor;
+  
+    }
+  
+
+  
+    if (savedDarkMode === false) {
+  
+      isDark = false;
+  
+      document.body.style.background = "#f0f0f0";
+  
+      document.body.style.color = "#000";
+  
+    }
+  
+
+  
+    setInterval(updateClock, 1000);
+  
+    updateClock();
+  
+    renderJournal();
+  
+    renderNotes();
+  
+  }  
+  
+let stopwatchInterval;  
+let stopwatchTime = 0; // in milliseconds  
+  
+function formatTime(ms) {  
+  const totalSeconds = Math.floor(ms / 1000);  
+  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');  
+  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');  
+  const seconds = String(totalSeconds % 60).padStart(2, '0');  
+  return `${hours}:${minutes}:${seconds}`;  
+}  
+  
+function updateStopwatchDisplay() {  
+  document.getElementById("stopwatchDisplay").textContent = formatTime(stopwatchTime);  
+}  
+  
+function startStopwatch() {  
+  if (!stopwatchInterval) {  
+    stopwatchInterval = setInterval(() => {  
+      stopwatchTime += 1000;  
+      updateStopwatchDisplay();  
+    }, 1000);  
+  }  
+}  
+  
+function stopStopwatch() {  
+  clearInterval(stopwatchInterval);  
+  stopwatchInterval = null;  
+}  
+  
+function resetStopwatch() {  
+  stopwatchTime = 0;  
+  updateStopwatchDisplay();  
+  clearInterval(stopwatchInterval);  
+  stopwatchInterval = null;  
+}
+  
+</script></body></html>
