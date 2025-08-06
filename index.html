@@ -13,14 +13,18 @@
     }
 
     body {
+<!-- LIVE BACKGROUND AREA -->
 <div id="live-background"></div>
 
-<label for="bg-mode">🌈 Live Background Mode:</label>
-<select id="bg-mode" onchange="setLiveBackground(this.value)">
-  <option value="particles">Particles</option>
-  <option value="waves">Waves</option>
-  <option value="gradient">Gradient</option>
-</select>
+<!-- Live Background Mode Dropdown -->
+<div style="margin: 1rem 0;">
+  <label for="bg-mode">🌈 Background:</label>
+  <select id="bg-mode" onchange="setLiveBackground(this.value)">
+    <option value="particles">Particles</option>
+    <option value="waves">Waves</option>
+    <option value="gradient">Gradient</option>
+  </select>
+</div>
 
       font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
       background: linear-gradient(145deg, #111, #1a1a1a);
@@ -229,6 +233,7 @@
   height: 100%;
   z-index: -1;
   overflow: hidden;
+  background-color: #000;
 }
 
 @keyframes gradientBG {
@@ -236,68 +241,7 @@
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
-<!-- Load Particles.js -->
-<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 
-<script>
-function setLiveBackground(mode) {
-  const bg = document.getElementById("live-background");
-  bg.innerHTML = ""; // Clear existing content
-  bg.removeAttribute("style"); // Remove old inline styles
-
-  if (mode === "particles") {
-    particlesJS('live-background', {
-      particles: {
-        number: { value: 80 },
-        color: { value: '#ffffff' },
-        shape: { type: 'circle' },
-        opacity: { value: 0.5 },
-        size: { value: 3 },
-        move: {
-          enable: true,
-          speed: 1,
-          direction: 'none',
-          random: true
-        }
-      },
-      interactivity: {
-        events: {
-          onhover: { enable: true, mode: 'repulse' }
-        }
-      },
-      background: {
-        color: "#000"
-      }
-    });
-  } else if (mode === "waves") {
-    bg.innerHTML = `
-      <svg viewBox="0 0 120 28" preserveAspectRatio="none" style="width:100%; height:100%;">
-        <path d="M0,10 C30,20 90,0 120,10 L120,30 L0,30 Z" fill="rgba(255,255,255,0.1)">
-          <animate attributeName="d" dur="4s" repeatCount="indefinite" values="
-            M0,10 C30,20 90,0 120,10 L120,30 L0,30 Z;
-            M0,15 C30,10 90,20 120,15 L120,30 L0,30 Z;
-            M0,10 C30,20 90,0 120,10 L120,30 L0,30 Z
-          "/>
-        </path>
-      </svg>
-    `;
-  } else if (mode === "gradient") {
-    bg.style.background = "linear-gradient(270deg, #ff0080, #7928ca)";
-    bg.style.backgroundSize = "400% 400%";
-    bg.style.animation = "gradientBG 10s ease infinite";
-  }
-
-  // Save user preference
-  localStorage.setItem("liveBackgroundMode", mode);
-}
-
-// Restore saved background on load
-window.addEventListener("load", () => {
-  const savedMode = localStorage.getItem("liveBackgroundMode") || "particles";
-  document.getElementById("bg-mode").value = savedMode;
-  setLiveBackground(savedMode);
-});
-</script>
   </style>
 </head>
 <body>
@@ -695,6 +639,63 @@ let stopwatchInterval;
   window.addEventListener("load", () => {
     renderLaps();
     updateStopwatchDisplay();
+  });
+<!-- Particles Library -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+<!-- Live Background Script -->
+<script>
+  function setLiveBackground(mode) {
+    const bg = document.getElementById("live-background");
+    bg.innerHTML = "";
+    bg.removeAttribute("style");
+
+    if (mode === "particles") {
+      particlesJS('live-background', {
+        particles: {
+          number: { value: 80 },
+          color: { value: '#ffffff' },
+          shape: { type: 'circle' },
+          opacity: { value: 0.5 },
+          size: { value: 3 },
+          move: {
+            enable: true,
+            speed: 1,
+            direction: 'none',
+            random: true
+          }
+        },
+        interactivity: {
+          events: {
+            onhover: { enable: true, mode: 'repulse' }
+          }
+        }
+      });
+    } else if (mode === "waves") {
+      bg.innerHTML = `
+        <svg viewBox="0 0 120 28" preserveAspectRatio="none" style="width:100%; height:100%;">
+          <path d="M0,10 C30,20 90,0 120,10 L120,30 L0,30 Z" fill="rgba(255,255,255,0.1)">
+            <animate attributeName="d" dur="4s" repeatCount="indefinite" values="
+              M0,10 C30,20 90,0 120,10 L120,30 L0,30 Z;
+              M0,15 C30,10 90,20 120,15 L120,30 L0,30 Z;
+              M0,10 C30,20 90,0 120,10 L120,30 L0,30 Z
+            "/>
+          </path>
+        </svg>
+      `;
+    } else if (mode === "gradient") {
+      bg.style.background = "linear-gradient(270deg, #ff0080, #7928ca)";
+      bg.style.backgroundSize = "400% 400%";
+      bg.style.animation = "gradientBG 10s ease infinite";
+    }
+
+    localStorage.setItem("liveBackgroundMode", mode);
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const saved = localStorage.getItem("liveBackgroundMode") || "particles";
+    document.getElementById("bg-mode").value = saved;
+    setLiveBackground(saved);
   });
 </script>
 </body>
