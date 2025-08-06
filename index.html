@@ -536,40 +536,80 @@
   }
 
 let stopwatchInterval;
-let stopwatchTime = 0; // in milliseconds
+  let stopwatchStartTime = 0;
+  let elapsedTime = 0;
+  let isRunning = false;
+  let laps = JSON.parse(localStorage.getItem("stopwatchLaps")) || [];
 
-function formatTime(ms) {
-  const totalSeconds = Math.floor(ms / 1000);
-  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-  const seconds = String(totalSeconds % 60).padStart(2, '0');
-  return `${hours}:${minutes}:${seconds}`;
-}
-
-function updateStopwatchDisplay() {
-  document.getElementById("stopwatchDisplay").textContent = formatTime(stopwatchTime);
-}
-
-function startStopwatch() {
-  if (!stopwatchInterval) {
-    stopwatchInterval = setInterval(() => {
-      stopwatchTime += 1000;
-      updateStopwatchDisplay();
-    }, 1000);
+  function formatFullTime(ms) {
+    const hours = String(Math.floor(ms / 3600000)).padStart(2, '0');
+    const minutes = String(Math.floor((ms % 3600000) / 60000)).padStart(2, '0');
+    const seconds = String(Math.floor((ms % 60000) / 1000)).padStart(2, '0');
+    const milliseconds = String(ms % 1000).padStart(3, '0');
+    return `${hours}:${minutes}:${seconds}.${milliseconds}`;
   }
-}
 
-function stopStopwatch() {
-  clearInterval(stopwatchInterval);
-  stopwatchInterval = null;
-}
+  function updateStopwatchDisplay() {
+    const now = Date.now();
+    const diff = isRunning ? now - stopwatchStartTime + elapsedTime : elapsedTime;
+    document.getElementById("stopwatchDisplay").textContent = formatFullTime(diff);
+  }
 
-function resetStopwatch() {
-  stopwatchTime = 0;
-  updateStopwatchDisplay();
-  clearInterval(stopwatchInterval);
-  stopwatchInterval = null;
-}
+  function startStopwatch() {
+    if (!isRunning) {
+      stopwatchStartTime = Date.now();
+      stopwatchInterval = setInterval(updateStopwatchDisplay, 10);
+      isRunning = true;
+    }
+  }
+
+  function stopStopwatch() {
+    if (isRunning) {
+      clearInterval(stopwatchInterval);
+      elapsedTime += Date.now() - stopwatchStartTime;
+      isRunning = false;
+    }
+  }
+
+  function resetStopwatch() {
+    clearInterval(stopwatchInterval);
+    stopwatchInterval = null;
+    isRunning = false;
+    stopwatchStartTime = 0;
+    elapsedTime = 0;
+    updateStopwatchDisplay();
+    laps = [];
+    localStorage.removeItem("stopwatchLaps");
+    renderLaps();
+  }
+
+  function recordLap() {
+    const now = isRunning ? Date.now() - stopwatchStartTime + elapsedTime : elapsedTime;
+    laps.push(now);
+    localStorage.setItem("stopwatchLaps", JSON.stringify(laps));
+    renderLaps();
+  }
+
+  function clearLaps() {
+    laps = [];
+    localStorage.removeItem("stopwatchLaps");
+    renderLaps();
+  }
+
+  function renderLaps() {
+    const lapList = document.getElementById("lapList");
+    lapList.innerHTML = "";
+    laps.forEach((lapTime, index) => {
+      const div = document.createElement("div");
+      div.textContent = `Lap ${index + 1}: ${formatFullTime(lapTime)}`;
+      lapList.appendChild(div);
+    });
+  }
+
+  window.addEventListener("load", () => {
+    renderLaps();
+    updateStopwatchDisplay();
+  });
 </script>
 </body>
 </html>
