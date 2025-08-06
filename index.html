@@ -13,7 +13,7 @@
     }
 
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
       background: linear-gradient(145deg, #111, #1a1a1a);
       color: var(--text-color);
       margin: 0;
@@ -143,7 +143,6 @@
       margin-bottom: 0.5rem;
     }
 
-    /* Journal & Notes UI Updates */
     #notesControls, #journalControls {
       display: flex;
       flex-direction: column;
@@ -201,6 +200,17 @@
       padding: 1.5rem;
       border-radius: 12px;
       box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+
+    #lapList {
+      background-color: #1a1a1a;
+      border: 1px solid #333;
+      padding: 1rem;
+      border-radius: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: monospace;
+      margin-top: 1rem;
     }
   </style>
 </head>
@@ -279,16 +289,20 @@
   <label for="slider">Change background brightness:</label>
   <input type="range" id="slider" min="0" max="225" oninput="changeBackground(this.value)" />
 
-<!-- Stopwatch -->
-<h2>⏱️ Stopwatch</h2>
-<div id="stopwatchDisplay">00:00:00</div>
-<div id="stopwatchControls">
-  <button onclick="startStopwatch()">Start</button>
-  <button onclick="stopStopwatch()">Stop</button>
-  <button onclick="resetStopwatch()">Reset</button>
-</div>
+  <!-- Stopwatch -->
+  <h2>⏱️ Stopwatch</h2>
+  <div id="stopwatchDisplay">00:00:00</div>
+  <div id="stopwatchControls">
+    <button onclick="startStopwatch()">Start</button>
+    <button onclick="stopStopwatch()">Stop</button>
+    <button onclick="resetStopwatch()">Reset</button>
+    <button onclick="recordLap()">Lap</button>
+    <button onclick="clearLaps()">Clear Laps</button>
+  </div>
+  <div id="lapList"></div>
 
- <script>
+  <!-- Scripts -->
+   <script>
   const musicPlayer = document.getElementById("musicPlayer");
   let journal = JSON.parse(localStorage.getItem("journal")) || [];
   let notes = JSON.parse(localStorage.getItem("notes")) || [];
