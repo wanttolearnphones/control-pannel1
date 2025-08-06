@@ -17,21 +17,30 @@
 
   
     body {
-  
-      font-family: 'Segoe UI', sans-serif;
-  
-      background: linear-gradient(145deg, #111, #1a1a1a);
-  
-      color: var(--text-color);
-  
-      margin: 0;
-  
-      padding: 2rem;
-  
-      transition: background 0.3s, color 0.3s;
-  
-    }
-  
+  font-family: 'Segoe UI', sans-serif;
+  color: var(--text-color);
+  margin: 0;
+  padding: 2rem;
+  transition: background 0.3s, color 0.3s;
+
+  /* Animated gradient background */
+  animation: gradientBG 15s ease infinite;
+  background: linear-gradient(-45deg, #1a1a1a, #222, #111, #000);
+  background-size: 400% 400%;
+}
+
+  @keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 
   
     h1, h2, h3 {
