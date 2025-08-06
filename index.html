@@ -279,6 +279,15 @@
   <label for="slider">Change background brightness:</label>
   <input type="range" id="slider" min="0" max="225" oninput="changeBackground(this.value)" />
 
+<!-- Stopwatch -->
+<h2>⏱️ Stopwatch</h2>
+<div id="stopwatchDisplay">00:00:00</div>
+<div id="stopwatchControls">
+  <button onclick="startStopwatch()">Start</button>
+  <button onclick="stopStopwatch()">Stop</button>
+  <button onclick="resetStopwatch()">Reset</button>
+</div>
+
  <script>
   const musicPlayer = document.getElementById("musicPlayer");
   let journal = JSON.parse(localStorage.getItem("journal")) || [];
@@ -510,7 +519,43 @@
     updateClock();
     renderJournal();
     renderNotes();
-  };
+  }
+
+let stopwatchInterval;
+let stopwatchTime = 0; // in milliseconds
+
+function formatTime(ms) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+  const seconds = String(totalSeconds % 60).padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+function updateStopwatchDisplay() {
+  document.getElementById("stopwatchDisplay").textContent = formatTime(stopwatchTime);
+}
+
+function startStopwatch() {
+  if (!stopwatchInterval) {
+    stopwatchInterval = setInterval(() => {
+      stopwatchTime += 1000;
+      updateStopwatchDisplay();
+    }, 1000);
+  }
+}
+
+function stopStopwatch() {
+  clearInterval(stopwatchInterval);
+  stopwatchInterval = null;
+}
+
+function resetStopwatch() {
+  stopwatchTime = 0;
+  updateStopwatchDisplay();
+  clearInterval(stopwatchInterval);
+  stopwatchInterval = null;
+}
 </script>
 </body>
 </html>
