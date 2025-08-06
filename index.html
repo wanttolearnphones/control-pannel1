@@ -3,13 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <title>Ritters Control Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    :root {
+      --bg-color: #111;
+      --text-color: white;
+      --btn-bg: linear-gradient(to right, #333, #111);
+      --btn-bg-hover: linear-gradient(to right, #555, #222);
+    }
+
     body {
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(145deg, #111, #1a1a1a);
-      color: white;
+      color: var(--text-color);
       margin: 0;
       padding: 2rem;
+      transition: background 0.3s, color 0.3s;
     }
 
     h1, h2, h3 {
@@ -22,14 +31,14 @@
       margin: 0.5rem 0.5rem 0.5rem 0;
       border: none;
       border-radius: 8px;
-      background: linear-gradient(to right, #333, #111);
+      background: var(--btn-bg);
       color: white;
       cursor: pointer;
       transition: all 0.3s ease;
     }
 
     button:hover {
-      background: linear-gradient(to right, #555, #222);
+      background: var(--btn-bg-hover);
       transform: scale(1.05);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     }
@@ -51,12 +60,6 @@
       align-items: center;
       flex-wrap: wrap;
       margin-bottom: 1rem;
-    }
-
-    #journalControls, #notesControls {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
     }
 
     input, textarea, select {
@@ -92,7 +95,6 @@
       margin-top: 2rem;
     }
 
-    /* Calendar */
     #calendarHeader {
       display: flex;
       justify-content: space-between;
@@ -148,10 +150,26 @@
     #eventModal input, #eventModal textarea {
       margin-bottom: 0.5rem;
     }
-
   </style>
 </head>
 <body>
+<!-- BODY CONTINUES WITH HTML AND SCRIPTS... -->
+
+
+✅ The merged code has been pasted into the canvas for easy editing and viewing. Let me know if you'd like:
+
+The full script section included next
+
+A cleaner layout or refactor
+
+Extra features like animations, icons, or mobile responsiveness
+
+To export it as a downloadable .html file
+
+
+What would you like to do next?
+
+
   <h1>Ritters's Control Panel</h1>
 
   <button onclick="changeText()">Click Me!</button>
