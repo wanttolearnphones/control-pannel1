@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login - Ritters Control Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    input, button {
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      margin: 5px;
+      font-size: 1rem;
+    }
+    input {
+      width: 200px;
+      background: #222;
+      color: white;
+    }
+    button {
+      background: linear-gradient(to right, #00bcd4, #008cba);
+      color: white;
+      cursor: pointer;
+    }
+    h2 {
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h2>🔐 Ritters Login</h2>
+  <input type="text" id="username" placeholder="Enter username" />
+  <input type="password" id="password" placeholder="Enter password" />
+  <button onclick="login()">Login</button>
+
+  <script>
+    const MASTER_PASSWORD = "196922"; // Set your master password
+
+    function login() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      const users = JSON.parse(localStorage.getItem("users") || "{}");
+
+      if (password === MASTER_PASSWORD) {
+        // Redirect to user selector
+        window.location.href = "user_select.html";
+      } else if (users[username] && users[username].pin === password) {
+        // Save active user and redirect
+        localStorage.setItem("activeUser", username);
+        window.location.href = "index.html";
+      } else {
+        alert("Incorrect credentials");
+      }
+    }
+  </script>
+</body>
+</html>

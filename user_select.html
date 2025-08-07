@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Select User</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+    .user-list button {
+      background: linear-gradient(to right, #00bcd4, #008cba);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      margin: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h2>👥 Select a Profile</h2>
+  <div class="user-list" id="userList"></div>
+  <script>
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    const list = document.getElementById("userList");
+
+    for (const user in users) {
+      const btn = document.createElement("button");
+      btn.textContent = user;
+      btn.onclick = () => {
+        localStorage.setItem("activeUser", user);
+        window.location.href = "index.html";
+      };
+      list.appendChild(btn);
+    }
+  </script>
+</body>
+</html>
