@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Task Manager - Ritters Control Panel</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .task-panel {
+      background: #1e1e1e;
+      padding: 2rem;
+      border-radius: 12px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 0 12px rgba(0,0,0,0.5);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #00bcd4;
+    }
+
+    .task-input {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #222;
+      color: white;
+    }
+
+    button {
+      background: linear-gradient(to right, #00bcd4, #008cba);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background: #2c2c2c;
+      margin-bottom: 10px;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    li.completed {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+
+    .btn-delete {
+      background: #e53935;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    .back-button {
+      margin-top: 2rem;
+      text-align: center;
+    }
+
+    .back-button a {
+      text-decoration: none;
+      background: linear-gradient(to right, #00bcd4, #008cba);
+      padding: 0.75rem 1.5rem;
+      color: white;
+      border-radius: 10px;
+      font-weight: bold;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <div class="task-panel">
+    <h2>📋 Task Manager</h2>
+
+    <div class="task-input">
+      <input type="text" id="taskInput" placeholder="Enter a new task..." />
+      <button onclick="addTask()">Add</button>
+    </div>
+
+    <ul id="taskList"></ul>
+  </div>
+
+  <div class="back-button">
+    <a href="index.html">⬅ Back to Control Panel</a>
+  </div>
+
+  <script>
+    let tasks = JSON.parse(localStorage.getItem("tasks") || "[]");
+
+    function renderTasks() {
+      const list = document.getElementById("taskList");
+      list.innerHTML = "";
+      tasks.forEach((task, index) => {
+        const li = document.createElement("li");
+        li.className = task.done ? "completed" : "";
+        li.innerHTML = `
+          <span onclick="toggleTask(${index})" style="cursor:pointer;">${task.text}</span>
+          <button class="btn-delete" onclick="deleteTask(${index})">✕</button>
+        `;
+        list.appendChild(li);
+      });
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+
+    function addTask() {
+      const input = document.getElementById("taskInput");
+      const text = input.value.trim();
+      if (text) {
+        tasks.push({ text, done: false });
+        input.value = "";
+        renderTasks();
+      }
+    }
+
+    function deleteTask(index) {
+      tasks.splice(index, 1);
+      renderTasks();
+    }
+
+    function toggleTask(index) {
+      tasks[index].done = !tasks[index].done;
+      renderTasks();
+    }
+
+    renderTasks();
+  </script>
+</body>
+</html>

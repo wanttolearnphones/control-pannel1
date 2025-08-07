@@ -1,0 +1,178 @@
+<!-- Mood Tracker Panel -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mood Tracker - Ritters Control Panel</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+
+
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .mood-panel {
+      background: #1e1e1e;
+      padding: 2rem;
+      border-radius: 12px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 0 12px rgba(0,0,0,0.5);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #00bcd4;
+    }
+
+    .emoji-picker {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .slider {
+      width: 100%;
+      margin: 1rem 0;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 1rem;
+      border-radius: 8px;
+      background: #222;
+      border: 1px solid #333;
+      color: white;
+      resize: none;
+    }
+
+    button {
+      background: linear-gradient(to right, #00bcd4, #008cba);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    canvas {
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+<button onclick="window.location.href='index.html'" style="
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 10px 15px;
+  background: linear-gradient(to right, #00bcd4, #008cba);
+  border: none;
+  color: white;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  z-index: 1000;
+">
+ Back to Control Panel
+</button>
+
+
+  <div class="mood-panel">
+    <h2>🧠 Mood Tracker</h2>
+
+    <div class="emoji-picker">
+      <span onclick="selectMood(1)">😢</span>
+      <span onclick="selectMood(2)">😞</span>
+      <span onclick="selectMood(3)">😐</span>
+      <span onclick="selectMood(4)">😊</span>
+      <span onclick="selectMood(5)">😄</span>
+    </div>
+
+    <input type="range" min="1" max="5" value="3" class="slider" id="moodSlider" oninput="updateSliderMood(this.value)">
+
+    <textarea id="moodNote" rows="3" placeholder="Optional note..."></textarea>
+
+    <button onclick="saveMood()">Save Mood</button>
+
+    <canvas id="moodChart" width="400" height="200"></canvas>
+  </div>
+
+  <script>
+    const moodData = JSON.parse(localStorage.getItem("moodHistory") || "{}");
+
+    function saveMood() {
+      const mood = document.getElementById("moodSlider").value;
+      const note = document.getElementById("moodNote").value.trim();
+      const today = new Date().toISOString().split("T")[0];
+
+      moodData[today] = { mood: parseInt(mood), note };
+      localStorage.setItem("moodHistory", JSON.stringify(moodData));
+      alert("Mood saved for today!");
+      renderChart();
+    }
+
+    function selectMood(value) {
+      document.getElementById("moodSlider").value = value;
+    }
+
+    function updateSliderMood(val) {
+      // could optionally update emoji preview live here
+    }
+
+    function renderChart() {
+      const labels = Object.keys(moodData);
+      const values = labels.map(d => moodData[d].mood);
+
+      const ctx = document.getElementById('moodChart').getContext('2d');
+      if (window.moodChartInstance) window.moodChartInstance.destroy();
+
+      window.moodChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Mood Over Time',
+            data: values,
+            borderColor: '#00bcd4',
+            backgroundColor: 'rgba(0,188,212,0.2)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 5
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              min: 1,
+              max: 5,
+              ticks: {
+                stepSize: 1,
+                callback: val => ['😢','😞','😐','😊','😄'][val-1]
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Initial chart render
+    renderChart();
+  </script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profile - Ritters Control Panel</title>
+  <style>
+    :root {
+      --bg-color: #111;
+      --card-bg: #1a1a1a;
+      --text-color: white;
+      --accent: #00bcd4;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .profile-container {
+      max-width: 500px;
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      width: 100%;
+    }
+
+    .profile-container h2 {
+      text-align: center;
+      margin-bottom: 1rem;
+      animation: slideIn 1s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: white;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    button:hover {
+      opacity: 0.85;
+    }
+
+    #avatarPreview {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      margin: 1rem auto;
+      border: 2px solid var(--accent);
+    }
+
+    #pinModal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    #pinBox {
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 12px;
+      text-align: center;
+      color: white;
+    }
+
+    .theme-preview {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .theme-box {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid white;
+    }
+
+    .back-btn {
+      background: #666;
+    }
+
+    .reset-btn {
+      background: #e91e63;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- PIN LOCK MODAL -->
+  <div id="pinModal">
+    <div id="pinBox">
+      <h2>🔐 Enter PIN to Access Profile</h2>
+      <input type="password" id="pinInput" placeholder="Enter PIN" />
+      <button onclick="checkPIN()">Unlock</button>
+    </div>
+  </div>
+
+  <!-- PROFILE CONTENT -->
+  <div class="profile-container" style="display:none;" id="profileContent">
+    <h2 id="welcomeMessage">👋 Welcome!</h2>
+
+    <img id="avatarPreview" src="https://via.placeholder.com/100" />
+    <input type="file" id="avatarUpload" accept="image/*" />
+
+    <input type="text" id="bio" placeholder="Bio" />
+    <input type="text" id="hobbies" placeholder="Hobbies" />
+    <input type="date" id="birthday" placeholder="Birthday" />
+    <input type="text" id="displayName" placeholder="Display Name" />
+    <input type="password" id="newPin" placeholder="Set New PIN (optional)" />
+
+    <div class="theme-preview">
+      <div class="theme-box" style="background:#00bcd4" onclick="applyTheme('#111', '#1a1a1a')"></div>
+      <div class="theme-box" style="background:#673ab7" onclick="applyTheme('#2a0a4d', '#3b0f6c')"></div>
+      <div class="theme-box" style="background:#4caf50" onclick="applyTheme('#0e2f18', '#1f4d2e')"></div>
+    </div>
+
+    <button onclick="saveProfile()">💾 Save Profile</button>
+    <button onclick="resetPassword()" class="reset-btn">🔁 Reset Password</button>
+    <button onclick="goBack()" class="back-btn">← Back</button>
+  </div>
+
+  <script>
+    const pinModal = document.getElementById("pinModal");
+    const profileContent = document.getElementById("profileContent");
+    const pinInput = document.getElementById("pinInput");
+    const avatarUpload = document.getElementById("avatarUpload");
+    const avatarPreview = document.getElementById("avatarPreview");
+    const welcomeMessage = document.getElementById("welcomeMessage");
+
+    // Load from storage
+    const userData = JSON.parse(localStorage.getItem("profileData")) || {};
+    const userPIN = localStorage.getItem("profilePIN") || "";
+
+    function checkPIN() {
+  const MASTER_PIN = "196922"; // You can change this to whatever you want
+
+  if (pinInput.value === userPIN || pinInput.value === MASTER_PIN) {
+    pinModal.style.display = "none";
+    profileContent.style.display = "block";
+    if (userData.displayName) {
+      welcomeMessage.innerText = `👋 Welcome, ${userData.displayName}!`;
+    }
+    loadProfile();
+  } else {
+    alert("Incorrect PIN.");
+  }
+}
+
+    avatarUpload.onchange = (e) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        avatarPreview.src = reader.result;
+        userData.avatar = reader.result;
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    };
+
+    function applyTheme(bg, card) {
+      document.documentElement.style.setProperty('--bg-color', bg);
+      document.documentElement.style.setProperty('--card-bg', card);
+    }
+
+    function saveProfile() {
+      userData.bio = document.getElementById("bio").value;
+      userData.hobbies = document.getElementById("hobbies").value;
+      userData.birthday = document.getElementById("birthday").value;
+      userData.displayName = document.getElementById("displayName").value;
+
+      const newPin = document.getElementById("newPin").value;
+      if (newPin) localStorage.setItem("profilePIN", newPin);
+
+      localStorage.setItem("profileData", JSON.stringify(userData));
+      alert("Profile saved!");
+    }
+
+    function loadProfile() {
+      if (userData.avatar) avatarPreview.src = userData.avatar;
+      if (userData.bio) document.getElementById("bio").value = userData.bio;
+      if (userData.hobbies) document.getElementById("hobbies").value = userData.hobbies;
+      if (userData.birthday) document.getElementById("birthday").value = userData.birthday;
+      if (userData.displayName) document.getElementById("displayName").value = userData.displayName;
+    }
+
+    function goBack() {
+      window.location.href = "index.html";
+    }
+
+    function resetPassword() {
+      localStorage.removeItem("user");
+      alert("Password has been reset. You'll be redirected to login.");
+      window.location.href = "auth.html";
+    }
+  </script>
+</body>
+</html>
