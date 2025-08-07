@@ -1091,6 +1091,9 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
   window.location.href = 'auth.html';
 });
 
+const currentUser = localStorage.getItem("activeUser");
+document.getElementById("welcomeMsg").textContent = `Welcome back, ${currentUser}!`;
+
 
 </script>
 </body>
