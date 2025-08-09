@@ -538,6 +538,16 @@
 <button onclick="recordLap()">Lap</button>  
 <button onclick="clearLaps()">Clear Laps</button> 
 
+<!-- Weather Widget -->
+<div id="weatherSection" class="panel-section">
+  <h2>🌤 Weather</h2>
+  <input type="text" id="weatherCity" placeholder="Enter city...">
+  <button onclick="getWeather()">Get Weather</button>
+  <div id="weatherResult" style="margin-top: 1rem; font-size: 1.1rem;">
+    No data yet.
+  </div>
+</div>
+
 <!--Script-->
 
 <script>
@@ -1094,6 +1104,40 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
 const currentUser = localStorage.getItem("activeUser");
 document.getElementById("welcomeMsg").textContent = `Welcome back, ${currentUser}!`;
 
+const weatherApiKey = "YOUR_API_KEY"; // Get one free at openweathermap.org
+
+async function getWeather() {
+  const city = document.getElementById("weatherCity").value.trim();
+  if (!city) return alert("Please enter a city name.");
+
+  localStorage.setItem("lastWeatherCity", city);
+
+  try {
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${weatherApiKey}&units=metric`);
+    if (!res.ok) throw new Error("City not found.");
+    const data = await res.json();
+
+    const temp = Math.round(data.main.temp);
+    const condition = data.weather[0].description;
+    const icon = `https://openweathermap.org/img/wn/${data.weather[0].icon}.png`;
+
+    document.getElementById("weatherResult").innerHTML = `
+      <img src="${icon}" alt="${condition}" style="vertical-align: middle;">
+      <strong>${city}</strong>: ${temp}°C, ${condition}
+    `;
+  } catch (err) {
+    document.getElementById("weatherResult").textContent = "Error: " + err.message;
+  }
+}
+
+// Load last searched city on start
+window.addEventListener("load", () => {
+  const lastCity = localStorage.getItem("lastWeatherCity");
+  if (lastCity) {
+    document.getElementById("weatherCity").value = lastCity;
+    getWeather();
+  }
+});
 
 </script>
 </body>
