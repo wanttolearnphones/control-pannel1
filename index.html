@@ -1104,40 +1104,76 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
 const currentUser = localStorage.getItem("activeUser");
 document.getElementById("welcomeMsg").textContent = `Welcome back, ${currentUser}!`;
 
-const weatherApiKey = "YOUR_API_KEY"; // Get one free at openweathermap.org
+<script>
+/* ===== WEATHER WIDGET ===== */
+const weatherApiKey = "YOUR_API_KEY"; // <-- Replace with your OpenWeatherMap API key
 
-async function getWeather() {
-  const city = document.getElementById("weatherCity").value.trim();
-  if (!city) return alert("Please enter a city name.");
-
-  localStorage.setItem("lastWeatherCity", city);
-
-  try {
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${weatherApiKey}&units=metric`);
-    if (!res.ok) throw new Error("City not found.");
-    const data = await res.json();
-
-    const temp = Math.round(data.main.temp);
-    const condition = data.weather[0].description;
-    const icon = `https://openweathermap.org/img/wn/${data.weather[0].icon}.png`;
-
-    document.getElementById("weatherResult").innerHTML = `
-      <img src="${icon}" alt="${condition}" style="vertical-align: middle;">
-      <strong>${city}</strong>: ${temp}°C, ${condition}
-    `;
-  } catch (err) {
-    document.getElementById("weatherResult").textContent = "Error: " + err.message;
-  }
+async function getWeatherByCity(city) {
+    try {
+        const res = await fetch(
+            `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${weatherApiKey}&units=metric`
+        );
+        if (!res.ok) throw new Error("City not found");
+        const data = await res.json();
+        displayWeather(data);
+        localStorage.setItem("lastWeatherCity", city);
+    } catch (err) {
+        alert("❌ " + err.message);
+    }
 }
 
-// Load last searched city on start
-window.addEventListener("load", () => {
-  const lastCity = localStorage.getItem("lastWeatherCity");
-  if (lastCity) {
-    document.getElementById("weatherCity").value = lastCity;
-    getWeather();
-  }
+async function getWeatherByCoords(lat, lon) {
+    try {
+        const res = await fetch(
+            `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&units=metric`
+        );
+        if (!res.ok) throw new Error("Location not found");
+        const data = await res.json();
+        displayWeather(data);
+        localStorage.setItem("lastWeatherCity", data.name);
+    } catch (err) {
+        alert("❌ " + err.message);
+    }
+}
+
+function displayWeather(data) {
+    const weatherDiv = document.getElementById("weatherResult");
+    weatherDiv.innerHTML = `
+        <h3>${data.name}, ${data.sys.country}</h3>
+        <p>${data.weather[0].description}</p>
+        <p>🌡️ ${data.main.temp}°C</p>
+        <p>💨 ${data.wind.speed} m/s</p>
+    `;
+}
+
+function requestLocationWeather() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            pos => getWeatherByCoords(pos.coords.latitude, pos.coords.longitude),
+            () => {
+                const lastCity = localStorage.getItem("lastWeatherCity");
+                if (lastCity) {
+                    getWeatherByCity(lastCity);
+                }
+            }
+        );
+    } else {
+        const lastCity = localStorage.getItem("lastWeatherCity");
+        if (lastCity) {
+            getWeatherByCity(lastCity);
+        }
+    }
+}
+
+// On page load
+window.addEventListener("load", requestLocationWeather);
+
+// On search
+document.getElementById("weatherSearchBtn").addEventListener("click", () => {
+    const city = document.getElementById("weatherCity").value.trim();
+    if (city) getWeatherByCity(city);
 });
+</script>
 
 </script>
 </body>
