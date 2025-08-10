@@ -3,22 +3,22 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Ritters Control Panel</title>
+<title>Ritters Control Panel — Full</title>
 <style>
   :root{
-    --bg:#0b0b0f; --panel:rgba(255,255,255,0.03); --accent:#6c63ff; --muted:#9aa0b4; --text:#eaf0ff;
+    --bg:#071018; --panel:rgba(255,255,255,0.03); --accent:#7b5cff; --muted:#9fb0c8; --text:#e9f2ff;
   }
   *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
-  header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter: blur(2px)}
+  body{margin:0; font-family:Inter,Segoe UI,Roboto,Arial;background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(4px)}
   h1{margin:0;font-size:1.05rem}
   .top-actions{display:flex;gap:8px}
   .btn{background:var(--accent);border:none;padding:8px 12px;border-radius:10px;color:#fff;cursor:pointer;font-weight:600}
-  .btn.alt{background:#2b2b2f}
+  .btn.alt{background:#24303a}
   .layout{display:grid;grid-template-columns:260px 1fr 320px;gap:16px;padding:18px;flex:1}
   nav{background:var(--panel);padding:14px;border-radius:12px;height:calc(100vh - 120px);overflow:auto}
   nav button{display:block;width:100%;text-align:left;padding:12px;border-radius:8px;border:none;background:transparent;color:var(--text);cursor:pointer;margin-bottom:8px}
-  nav button.active{background:rgba(108,99,255,0.12)}
+  nav button.active{background:rgba(123,92,255,0.12)}
   main{background:var(--panel);padding:14px;border-radius:12px;min-height:400px;overflow:auto}
   aside{background:var(--panel);padding:14px;border-radius:12px;height:calc(100vh - 120px);overflow:auto}
   section{display:none}
@@ -29,9 +29,11 @@
   .small{font-size:0.9rem;color:var(--muted)}
   .laps{max-height:160px;overflow:auto;padding:6px;background:rgba(255,255,255,0.02);border-radius:8px;margin-top:8px}
   footer{padding:12px;text-align:center;color:var(--muted);font-size:0.85rem}
-  /* login modal */
-  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999}
-  .modal{width:360px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:18px;border-radius:12px}
+  /* fullscreen auth modal */
+  .modal-backdrop{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,10,0.6), rgba(2,6,10,0.6));z-index:9999}
+  .auth-card{width:100%;max-width:520px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:22px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
+  .auth-top{display:flex;gap:12px;align-items:center}
+  .auth-title{font-size:1.2rem;margin:0}
   .row{display:flex;gap:8px}
   @media(max-width:1000px){.layout{grid-template-columns:1fr;grid-auto-rows:min-content}aside{order:3}}
 </style>
@@ -41,7 +43,7 @@
 <header>
   <div style="display:flex;align-items:center;gap:12px">
     <h1>Ritters Control Panel</h1>
-    <div id="welcomeText" class="small">Please sign in</div>
+    <div id="welcomeText" class="small">Please sign up or log in</div>
   </div>
   <div class="top-actions">
     <button class="btn" id="themeToggle">Toggle Theme</button>
@@ -50,7 +52,6 @@
 </header>
 
 <div class="layout">
-  <!-- NAV -->
   <nav id="nav">
     <button data-tab="dashboard" class="active">Dashboard</button>
     <button data-tab="journal">Journal</button>
@@ -63,8 +64,8 @@
     <button data-tab="profile">Profile</button>
   </nav>
 
-  <!-- MAIN -->
   <main>
+    <!-- Dashboard -->
     <section id="tab-dashboard" class="active">
       <h2>Dashboard</h2>
       <div style="display:flex;gap:12px;flex-wrap:wrap">
@@ -83,6 +84,7 @@
       </div>
     </section>
 
+    <!-- Journal -->
     <section id="tab-journal">
       <h2>Journal</h2>
       <input id="journalTitle" placeholder="Title">
@@ -95,6 +97,7 @@
       <div id="journalList"></div>
     </section>
 
+    <!-- Notes -->
     <section id="tab-notes">
       <h2>Notes</h2>
       <input id="noteTitle" placeholder="Note title">
@@ -107,6 +110,7 @@
       <div id="notesList"></div>
     </section>
 
+    <!-- Calendar -->
     <section id="tab-calendar">
       <h2>Calendar</h2>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -117,6 +121,7 @@
       <div style="margin-top:12px" id="calendarEventsList"></div>
     </section>
 
+    <!-- Stopwatch -->
     <section id="tab-stopwatch">
       <h2>Stopwatch</h2>
       <div id="stopwatchDisplay" style="font-weight:700;font-size:1.4rem">00:00:00.000</div>
@@ -130,6 +135,7 @@
       <div class="laps" id="lapsContainer"></div>
     </section>
 
+    <!-- Music -->
     <section id="tab-music">
       <h2>Music Player</h2>
       <div style="display:flex;gap:8px;align-items:center">
@@ -139,6 +145,7 @@
       <audio id="musicPlayer" controls style="margin-top:12px;width:100%"></audio>
     </section>
 
+    <!-- Mood -->
     <section id="tab-mood">
       <h2>Mood Tracker</h2>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -157,6 +164,7 @@
       <div id="moodHistory"></div>
     </section>
 
+    <!-- Weather -->
     <section id="tab-weather">
       <h2>Weather</h2>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -167,6 +175,7 @@
       <div style="margin-top:12px" id="weatherResult"></div>
     </section>
 
+    <!-- Profile -->
     <section id="tab-profile">
       <h2>Profile</h2>
       <div style="display:flex;gap:12px;align-items:center">
@@ -190,7 +199,6 @@
     </section>
   </main>
 
-  <!-- ASIDE -->
   <aside>
     <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
       <img id="asidePic" class="profile-pic" src="">
@@ -225,148 +233,173 @@
 
 <footer>Ritters Control Panel • Data stored locally</footer>
 
-<!-- LOGIN/SIGNUP MODAL (inside same file) -->
+<!-- FULLSCREEN AUTH (blocks app until login) -->
 <div id="authModal" class="modal-backdrop" style="display:none">
-  <div class="modal">
-    <div style="display:flex;gap:12px;align-items:center">
+  <div class="auth-card">
+    <div class="auth-top">
       <img id="authPreview" class="profile-pic" src="">
       <div style="flex:1">
-        <h2 id="authTitle">Welcome</h2>
-        <div class="small" id="authSubtitle">Sign up or login to continue</div>
+        <h2 class="auth-title" id="authTitle">Welcome</h2>
+        <div class="small" id="authSubtitle">Sign up or log in to continue</div>
       </div>
     </div>
 
-    <div style="margin-top:12px">
-      <input id="authUser" placeholder="Username">
-      <input id="authPass" placeholder="Password" type="password">
-      <input id="authBio" placeholder="Short bio (optional)">
-      <input id="authPic" type="file" accept="image/*">
-      <div class="row" style="margin-top:10px">
+    <div style="margin-top:14px">
+      <input id="authUser" placeholder="Username (no spaces)" autocomplete="username" />
+      <input id="authPass" placeholder="Password" type="password" autocomplete="current-password" />
+      <input id="authBio" placeholder="Short bio (optional)" />
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+        <input id="authPic" type="file" accept="image/*" />
+        <button id="previewClear" class="btn alt">Clear Pic</button>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:12px">
         <button id="signupBtn" class="btn">Sign Up</button>
         <button id="loginBtn" class="btn alt">Login</button>
+        <button id="demoBtn" class="btn" title="create a demo user (empty)">Demo</button>
       </div>
+
       <div style="display:flex;gap:8px;margin-top:10px">
-        <button id="demoBtn" class="btn">Demo Account</button>
-        <button id="closeAuth" class="btn alt">Close</button>
+        <button id="closeAuth" class="btn alt">Close (if logged in)</button>
+        <button id="forgotBtn" class="btn" title="Not secure — local-only">Forgot pw?</button>
       </div>
-      <div id="authMessage" class="small" style="margin-top:10px;color:#f8d7da"></div>
+
+      <div id="authMessage" class="small" style="margin-top:12px;color:#f7c6c6"></div>
     </div>
   </div>
 </div>
 
 <script>
-/* =========================
-   Single-file Control Panel
-   ========================= */
+/* ---------------------------
+   Ritters Full Single File App
+   --------------------------- */
 
 /* CONFIG */
 const USERS_KEY = 'ritters_users';
 const CURRENT_USER_KEY = 'ritters_currentUser';
-const WEATHER_API_KEY = 'bc35dc734bb6fb3c973c5c4de9d0c0e2'; // your key
+const WEATHER_API_KEY = ''; // <-- PASTE your OpenWeatherMap key here (or leave blank)
 
-/* Basic helpers */
+/* UTIL */
 const $ = id => document.getElementById(id);
-function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
 function loadUsers(){ return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); }
-function ukey(key){ return `${currentUser}::${key}`; } // per-user storage key
+function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
+function ukey(k){ return `${currentUser}::${k}`; }
+function userGet(k, fallback){ return JSON.parse(localStorage.getItem(ukey(k)) || JSON.stringify(fallback)); }
+function userSet(k, value){ localStorage.setItem(ukey(k), JSON.stringify(value)); }
 
-/* AUTH MODAL (embedded) */
+/* HASH password using SubtleCrypto SHA-256 -> hex */
+async function hashPassword(pw){
+  const enc = new TextEncoder();
+  const buf = await crypto.subtle.digest('SHA-256', enc.encode(pw));
+  const arr = Array.from(new Uint8Array(buf));
+  return arr.map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+/* AUTH UI ELEMENTS */
 const authModal = $('authModal');
 const authUser = $('authUser'), authPass = $('authPass'), authBio = $('authBio'), authPic = $('authPic');
 const authPreview = $('authPreview'), authMessage = $('authMessage');
-authPic.addEventListener('change', e => {
-  const f = e.target.files[0]; if(!f) return authPreview.src='';
-  const r = new FileReader(); r.onload = ()=> authPreview.src = r.result; r.readAsDataURL(f);
-});
 
-/* show / hide auth */
-function showAuth(msg){
-  authMessage.textContent = msg||'';
-  authModal.style.display='flex';
-}
-function hideAuth(){ authModal.style.display='none'; authMessage.textContent=''; }
-
-/* create demo user */
-function ensureDemo(){
-  const users = loadUsers();
-  if(!users.demo){
-    users.demo = { password:'demo', bio:'Demo account', pic:'', joined:new Date().toISOString() };
-    saveUsers(users);
-  }
-}
-
-/* signup/login handlers */
-$('signupBtn').addEventListener('click', ()=> {
-  const name = authUser.value.trim(); const pass = authPass.value;
-  if(!name || !pass){ authMessage.textContent='Username and password required.'; return; }
-  const users = loadUsers();
-  if(users[name]){ authMessage.textContent='Username taken.'; return; }
-  users[name] = { password: pass, bio: authBio.value||'', pic: authPreview.src||'', joined:new Date().toISOString() };
-  saveUsers(users);
-  localStorage.setItem(CURRENT_USER_KEY, name);
-  initForCurrentUser();
-  hideAuth();
+/* preview pic */
+authPic.addEventListener('change', (e)=>{
+  const f = e.target.files[0];
+  if(!f){ authPreview.src = ''; return; }
+  const r = new FileReader();
+  r.onload = () => authPreview.src = r.result;
+  r.readAsDataURL(f);
 });
-$('loginBtn').addEventListener('click', ()=> {
-  const name = authUser.value.trim(); const pass = authPass.value;
-  if(!name || !pass){ authMessage.textContent='Username and password required.'; return; }
-  const users = loadUsers();
-  if(!users[name] || users[name].password !== pass){ authMessage.textContent='Invalid credentials.'; return; }
-  localStorage.setItem(CURRENT_USER_KEY, name);
-  initForCurrentUser();
-  hideAuth();
-});
-$('demoBtn').addEventListener('click', ()=> {
-  ensureDemo();
-  localStorage.setItem(CURRENT_USER_KEY, 'demo');
-  initForCurrentUser();
-  hideAuth();
-});
-$('closeAuth').addEventListener('click', ()=> { /* close only if logged in */ if(!localStorage.getItem(CURRENT_USER_KEY)) return; hideAuth(); });
+$('previewClear').addEventListener('click', ()=> { authPreview.src = ''; authPic.value = ''; });
 
-/* if a user is already logged in, skip modal; otherwise show modal */
+/* show/hide auth */
+function showAuth(msg=''){ authMessage.textContent = msg; authModal.style.display = 'flex'; }
+function hideAuth(){ authModal.style.display = 'none'; authMessage.textContent = ''; }
+
+/* current user variable */
 let currentUser = localStorage.getItem(CURRENT_USER_KEY) || null;
 
-/* UI: navigation */
-const nav = document.querySelectorAll('nav button');
+/* UI helpers */
+const navButtons = document.querySelectorAll('nav button');
 const sections = document.querySelectorAll('main section');
 function setActiveTab(tab){
-  nav.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  navButtons.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   sections.forEach(s => s.id === `tab-${tab}` ? s.classList.add('active') : s.classList.remove('active'));
+  window.scrollTo({top:0, behavior:'smooth'});
 }
-nav.forEach(b => b.addEventListener('click', ()=> setActiveTab(b.dataset.tab)));
-function navTo(tab){ setActiveTab(tab); window.scrollTo({top:0,behavior:'smooth'}); }
+navButtons.forEach(b => b.addEventListener('click', ()=> setActiveTab(b.dataset.tab)));
+function navTo(t){ setActiveTab(t); }
 
 /* LOGOUT */
 function logout(){
   localStorage.removeItem(CURRENT_USER_KEY);
   currentUser = null;
-  showAuth('Signed out. Please log in.');
-  renderSignedOutView();
+  showAuth('Signed out. Please sign in.');
+  renderSignedOutUI();
 }
 $('logoutBtn').addEventListener('click', logout);
 $('logoutBtnAside')?.addEventListener('click', logout);
 
-/* THEME toggle - simple swap */
+/* THEME toggle (simple) */
 $('themeToggle').addEventListener('click', ()=>{
-  if(document.documentElement.style.getPropertyValue('--bg') === '#fff'){
-    document.documentElement.style.setProperty('--bg','#0b0b0f'); document.documentElement.style.setProperty('--text','#eaf0ff');
-  } else {
-    document.documentElement.style.setProperty('--bg','#fff'); document.documentElement.style.setProperty('--text','#111');
-  }
+  const curBg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+  if(curBg === '#fff'){ document.documentElement.style.setProperty('--bg','#071018'); document.documentElement.style.setProperty('--text','#e9f2ff'); }
+  else { document.documentElement.style.setProperty('--bg','#fff'); document.documentElement.style.setProperty('--text','#111'); }
 });
 
-/* initial profile & UI render */
-function renderSignedOutView(){
+/* AUTH: signup/login/demo */
+$('signupBtn').addEventListener('click', async ()=>{
+  const name = authUser.value.trim();
+  const pw = authPass.value;
+  if(!name || !pw){ authMessage.textContent = 'Username and password required.'; return; }
+  if(/\s/.test(name)){ authMessage.textContent = 'Username cannot contain spaces.'; return; }
+  const users = loadUsers();
+  if(users[name]){ authMessage.textContent = 'Username taken.'; return; }
+  const hash = await hashPassword(pw);
+  users[name] = { passwordHash: hash, bio: authBio.value||'', pic: authPreview.src||'', joined: new Date().toISOString() };
+  saveUsers(users);
+  localStorage.setItem(CURRENT_USER_KEY, name);
+  initForUser();
+  hideAuth();
+});
+$('loginBtn').addEventListener('click', async ()=>{
+  const name = authUser.value.trim(); const pw = authPass.value;
+  if(!name || !pw){ authMessage.textContent = 'Username and password required.'; return; }
+  const users = loadUsers();
+  if(!users[name]){ authMessage.textContent = 'No such user.'; return; }
+  const hash = await hashPassword(pw);
+  if(hash !== users[name].passwordHash){ authMessage.textContent = 'Invalid credentials.'; return; }
+  localStorage.setItem(CURRENT_USER_KEY, name);
+  initForUser();
+  hideAuth();
+});
+$('demoBtn').addEventListener('click', ()=>{
+  // create blank demo account (empty) and log in
+  const users = loadUsers();
+  if(!users.demo){ users.demo = { passwordHash: '', bio:'', pic:'', joined:new Date().toISOString() }; saveUsers(users); }
+  localStorage.setItem(CURRENT_USER_KEY, 'demo');
+  initForUser();
+  hideAuth();
+});
+$('closeAuth').addEventListener('click', ()=> {
+  if(!currentUser) return; hideAuth();
+});
+$('forgotBtn').addEventListener('click', ()=> {
+  alert('This app stores passwords locally (client side). If you forget it, there is no server-side reset. Consider creating a new account.');
+});
+
+/* Signed out UI */
+function renderSignedOutUI(){
   $('welcomeText').textContent = 'Please sign in';
   $('logoutBtn').style.display = 'none';
   $('currentUserLabel').textContent = '';
   $('asideName').textContent = '';
   $('asideBio').textContent = '';
   $('asidePic').src = '';
-  // hide sensitive panels? Keep UI but require login for actions.
+  // clear main panels
+  // but keep nav visible; actions will require login.
 }
-function renderSignedInView(userObj){
+
+/* Signed in UI */
+function renderSignedInUI(userObj){
   $('welcomeText').textContent = `Welcome, ${currentUser}`;
   $('logoutBtn').style.display = 'inline-block';
   $('currentUserLabel').textContent = currentUser;
@@ -378,26 +411,28 @@ function renderSignedInView(userObj){
   $('profileJoined').textContent = 'Joined: ' + new Date(userObj.joined).toLocaleDateString();
 }
 
-/* per-user data helpers */
-function userDataGet(key, fallback){ return JSON.parse(localStorage.getItem(ukey(key)) || JSON.stringify(fallback)); }
-function userDataSet(key, value){ localStorage.setItem(ukey(key), JSON.stringify(value)); }
+/* Per-user rendering of all data */
+function renderAllUserData(){
+  renderJournalList(); renderNotesList(); renderEvents(); renderLaps(); renderMoodHistory(); renderStats(); loadStopwatchState();
+}
 
-/* load user or show auth */
-function initForCurrentUser(){
+/* Initialize after login */
+function initForUser(){
   currentUser = localStorage.getItem(CURRENT_USER_KEY);
-  if(!currentUser){ showAuth(); return; }
   const users = loadUsers();
-  const me = users[currentUser] || { bio:'', pic:'', joined: new Date().toISOString() };
-  renderSignedInView(me);
+  const me = users[currentUser] || { bio:'', pic:'', joined:new Date().toISOString(), passwordHash:'' };
+  renderSignedInUI(me);
   renderAllUserData();
   hideAuth();
 }
 
-/* ==========================
-   Journal (per-user)
-   ========================== */
+/* If no one logged in, show auth fullscreen */
+if(!currentUser){ showAuth(); renderSignedOutUI(); }
+else { initForUser(); }
+
+/* ---------- JOURNAL ---------- */
 function renderJournalList(){
-  const list = userDataGet('journal', []);
+  const list = userGet('journal', []);
   $('journalList').innerHTML = list.map(item => `
     <div class="card">
       <div style="display:flex;justify-content:space-between">
@@ -410,27 +445,26 @@ function renderJournalList(){
   `).join('');
 }
 window.deleteJournal = function(id){
-  let arr = userDataGet('journal', []);
-  arr = arr.filter(i=> i.id !== id);
-  userDataSet('journal', arr); renderJournalList(); renderStats();
-}
+  if(!currentUser){ alert('Log in first'); return; }
+  let arr = userGet('journal', []);
+  arr = arr.filter(i => i.id !== id);
+  userSet('journal', arr); renderJournalList(); renderStats();
+};
 $('saveJournalBtn').addEventListener('click', ()=>{
+  if(!currentUser){ alert('Log in first'); return; }
   const title = $('journalTitle').value.trim(), body = $('journalBody').value.trim();
-  if(!title && !body) return alert('Write something first.');
-  const arr = userDataGet('journal', []);
-  arr.unshift({ id: Date.now(), title, body, created: new Date().toISOString() });
-  userDataSet('journal', arr);
+  if(!title && !body){ alert('Write something'); return; }
+  const arr = userGet('journal', []); arr.unshift({ id: Date.now(), title, body, created: new Date().toISOString() });
+  userSet('journal', arr);
   $('journalTitle').value=''; $('journalBody').value='';
   renderJournalList(); renderStats();
 });
-$('clearJournalBtn').addEventListener('click', ()=>{ if(confirm('Clear all entries?')){ userDataSet('journal', []); renderJournalList(); renderStats(); } });
+$('clearJournalBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(confirm('Clear all journal entries?')){ userSet('journal', []); renderJournalList(); renderStats(); } });
 
-/* ==========================
-   Notes
-   ========================== */
+/* ---------- NOTES ---------- */
 function renderNotesList(){
-  const arr = userDataGet('notes', []);
-  $('notesList').innerHTML = arr.map(n=>`
+  const arr = userGet('notes', []);
+  $('notesList').innerHTML = arr.map(n => `
     <div class="card">
       <div style="display:flex;justify-content:space-between"><strong>${n.t||'(no title)'}</strong><small class="small">${new Date(n.created).toLocaleString()}</small></div>
       <div style="margin-top:8px">${(n.b||'').replace(/\n/g,'<br>')}</div>
@@ -439,26 +473,25 @@ function renderNotesList(){
   `).join('');
 }
 window.deleteNote = function(id){
-  let arr = userDataGet('notes', []);
-  arr = arr.filter(n=> n.id !== id);
-  userDataSet('notes', arr); renderNotesList(); renderStats();
-}
+  if(!currentUser) return alert('Log in first');
+  let arr = userGet('notes', []);
+  arr = arr.filter(n => n.id !== id);
+  userSet('notes', arr); renderNotesList(); renderStats();
+};
 $('saveNoteBtn').addEventListener('click', ()=>{
+  if(!currentUser) return alert('Log in first');
   const t = $('noteTitle').value.trim(), b = $('noteBody').value.trim();
   if(!t && !b) return alert('Write a note.');
-  const arr = userDataGet('notes', []);
-  arr.unshift({ id: Date.now(), t, b, created: new Date().toISOString() });
-  userDataSet('notes', arr);
+  const arr = userGet('notes', []); arr.unshift({ id: Date.now(), t, b, created: new Date().toISOString() });
+  userSet('notes', arr);
   $('noteTitle').value=''; $('noteBody').value='';
   renderNotesList(); renderStats();
 });
-$('clearNotesBtn').addEventListener('click', ()=>{ if(confirm('Clear all notes?')){ userDataSet('notes', []); renderNotesList(); renderStats(); } });
+$('clearNotesBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(confirm('Clear all notes?')){ userSet('notes', []); renderNotesList(); renderStats(); } });
 
-/* ==========================
-   Calendar (events)
-   ========================== */
+/* ---------- CALENDAR ---------- */
 function renderEvents(){
-  const events = userDataGet('events', {});
+  const events = userGet('events', {});
   const keys = Object.keys(events).sort();
   $('calendarEventsList').innerHTML = keys.map(d => `
     <div class="card"><div style="display:flex;justify-content:space-between"><strong>${d}</strong><small class="small">${events[d].length} event(s)</small></div>
@@ -466,24 +499,18 @@ function renderEvents(){
   `).join('');
 }
 $('saveEventBtn').addEventListener('click', ()=>{
+  if(!currentUser) return alert('Log in first');
   const date = $('eventDate').value, title = $('eventTitle').value.trim();
-  if(!date || !title) return alert('Pick a date and title.');
-  const events = userDataGet('events', {});
-  if(!events[date]) events[date]=[];
-  events[date].push({ id: Date.now(), title });
-  userDataSet('events', events); renderEvents(); renderStats();
+  if(!date || !title) return alert('Pick date and title');
+  const events = userGet('events', {}); if(!events[date]) events[date]=[]; events[date].push({ id: Date.now(), title }); userSet('events', events);
+  $('eventDate').value=''; $('eventTitle').value=''; renderEvents(); renderStats();
 });
-window.deleteEvent = function(d,id){
-  const events = userDataGet('events', {});
-  if(!events[d]) return;
-  events[d] = events[d].filter(e=> e.id !== id);
-  if(events[d].length===0) delete events[d];
-  userDataSet('events', events); renderEvents(); renderStats();
-}
+window.deleteEvent = function(date,id){
+  if(!currentUser) return alert('Log in first');
+  const events = userGet('events', {}); if(!events[date]) return; events[date] = events[date].filter(e=> e.id !== id); if(events[date].length===0) delete events[date]; userSet('events', events); renderEvents(); renderStats();
+};
 
-/* ==========================
-   Stopwatch
-   ========================== */
+/* ---------- STOPWATCH ---------- */
 let swInterval = null, swStart = 0, swElapsed = 0, swRunning = false;
 function swFormat(ms){
   const hours = Math.floor(ms/3600000);
@@ -492,42 +519,25 @@ function swFormat(ms){
   const msecs = ms%1000;
   return `${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}.${String(msecs).padStart(3,'0')}`;
 }
-function swUpdate(){
-  const now = Date.now();
-  const diff = (swRunning ? now - swStart + swElapsed : swElapsed);
-  $('stopwatchDisplay').textContent = swFormat(diff);
-}
-$('startSW').addEventListener('click', ()=>{ if(swRunning) return; swStart = Date.now(); swRunning = true; swInterval = setInterval(swUpdate, 40); });
-$('stopSW').addEventListener('click', ()=>{ if(!swRunning) return; clearInterval(swInterval); swElapsed += Date.now() - swStart; swRunning = false; swUpdate(); persistStopwatch(); });
-$('resetSW').addEventListener('click', ()=>{ if(confirm('Reset stopwatch?')){ clearInterval(swInterval); swStart=0; swElapsed=0; swRunning=false; $('stopwatchDisplay').textContent='00:00:00.000'; userDataSet('sw_laps', []); renderLaps(); persistStopwatch(); }});
-$('lapSW').addEventListener('click', ()=>{ const val = $('stopwatchDisplay').textContent; const laps = userDataGet('sw_laps', []); laps.unshift({ id: Date.now(), time: val }); userDataSet('sw_laps', laps); renderLaps(); renderStats(); });
-function renderLaps(){ const laps = userDataGet('sw_laps', []); $('lapsContainer').innerHTML = laps.map(l=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.02)">${l.time}<button class="btn alt" onclick="deleteLap(${l.id})">Del</button></div>`).join(''); }
-window.deleteLap = function(id){ let laps = userDataGet('sw_laps', []); laps = laps.filter(l => l.id !== id); userDataSet('sw_laps', laps); renderLaps(); renderStats(); }
-function persistStopwatch(){ userDataSet('sw_state', { swElapsed, swRunning, swStart: swRunning ? swStart : 0 }); }
-function loadStopwatchState(){ const s = userDataGet('sw_state', null); if(s){ swElapsed = s.swElapsed || 0; swRunning = s.swRunning || false; if(swRunning){ swStart = Date.now(); swInterval = setInterval(swUpdate,40); } swUpdate(); } renderLaps(); }
+function swUpdate(){ const now = Date.now(); const diff = (swRunning ? now - swStart + swElapsed : swElapsed); $('stopwatchDisplay').textContent = swFormat(diff); }
+$('startSW').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(swRunning) return; swStart = Date.now(); swRunning = true; swInterval = setInterval(swUpdate, 40); });
+$('stopSW').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(!swRunning) return; clearInterval(swInterval); swElapsed += Date.now() - swStart; swRunning = false; swUpdate(); persistStopwatch(); });
+$('resetSW').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(confirm('Reset stopwatch?')){ clearInterval(swInterval); swStart=0; swElapsed=0; swRunning=false; $('stopwatchDisplay').textContent='00:00:00.000'; userSet('sw_laps', []); renderLaps(); persistStopwatch(); }});
+$('lapSW').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const val = $('stopwatchDisplay').textContent; const laps = userGet('sw_laps', []); laps.unshift({ id: Date.now(), time: val }); userSet('sw_laps', laps); renderLaps(); renderStats(); });
+function renderLaps(){ const laps = userGet('sw_laps', []); $('lapsContainer').innerHTML = laps.map(l=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.02)">${l.time}<button class="btn alt" onclick="deleteLap(${l.id})">Del</button></div>`).join(''); }
+window.deleteLap = function(id){ if(!currentUser) return alert('Log in first'); let laps = userGet('sw_laps', []); laps = laps.filter(l=> l.id !== id); userSet('sw_laps', laps); renderLaps(); renderStats(); };
+function persistStopwatch(){ userSet('sw_state', { swElapsed, swRunning, swStart: swRunning ? swStart : 0 }); }
+function loadStopwatchState(){ const s = userGet('sw_state', null); if(s){ swElapsed = s.swElapsed||0; swRunning = s.swRunning||false; if(swRunning){ swStart = Date.now(); swInterval = setInterval(swUpdate,40); } swUpdate(); } renderLaps(); }
 
-/* ==========================
-   Music
-   ========================== */
-$('playFileBtn').addEventListener('click', ()=>{
-  const f = $('musicFile').files[0]; if(!f) return alert('Pick an audio file.');
-  const url = URL.createObjectURL(f); $('musicPlayer').src = url; $('musicPlayer').play();
-});
+/* ---------- MUSIC ---------- */
+$('playFileBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const f = $('musicFile').files[0]; if(!f) return alert('Choose audio file'); const url = URL.createObjectURL(f); $('musicPlayer').src = url; $('musicPlayer').play(); });
 
-/* ==========================
-   Mood Tracker
-   ========================== */
-$('saveMoodBtn').addEventListener('click', ()=>{
-  const mood = $('moodSelect').value, note = $('moodNote').value.trim();
-  const arr = userDataGet('moods', []); arr.unshift({ id: Date.now(), mood, note, t: new Date().toISOString() });
-  userDataSet('moods', arr); $('moodNote').value=''; renderMoodHistory(); renderStats();
-});
-function renderMoodHistory(){ const arr = userDataGet('moods', []); $('moodHistory').innerHTML = arr.map(m=>`<div class="card"><div style="display:flex;justify-content:space-between"><div>${m.mood} ${m.note?m.note:''}</div><small class="small">${new Date(m.t).toLocaleString()}</small></div></div>`).join(''); }
+/* ---------- MOOD ---------- */
+$('saveMoodBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const mood = $('moodSelect').value, note = $('moodNote').value.trim(); const arr = userGet('moods', []); arr.unshift({ id: Date.now(), mood, note, t: new Date().toISOString() }); userSet('moods', arr); $('moodNote').value=''; renderMoodHistory(); renderStats(); });
+function renderMoodHistory(){ const arr = userGet('moods', []); $('moodHistory').innerHTML = arr.map(m => `<div class="card"><div style="display:flex;justify-content:space-between"><div>${m.mood} ${m.note?m.note:''}</div><small class="small">${new Date(m.t).toLocaleString()}</small></div></div>`).join(''); }
 renderMoodHistory();
 
-/* ==========================
-   Weather (auto detect + manual)
-   ========================== */
+/* ---------- WEATHER ---------- */
 const weatherResult = $('weatherResult'), asideWeather = $('asideWeather');
 async function displayWeatherFromData(data){
   asideWeather.textContent = `${Math.round(data.main.temp)}°C • ${data.weather[0].main}`;
@@ -540,123 +550,98 @@ async function displayWeatherFromData(data){
   `;
 }
 async function fetchWeatherByCity(city){
-  if(!city) return alert('Enter a city, e.g. "London, GB"');
-  try{
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${WEATHER_API_KEY}&units=metric`);
-    const data = await res.json();
-    if(data.cod && data.cod !== 200){ weatherResult.innerHTML = `<div style="color:orange">City not found — try "City, CountryCode".</div>`; return; }
-    displayWeatherFromData(data); userDataSet('lastWeather', city);
-  }catch(e){ weatherResult.innerHTML = `<div style="color:red">Network error</div>`; }
+  if(!city) return alert('Enter a city, like "London, GB"');
+  if(!WEATHER_API_KEY){ weatherResult.innerHTML = '<div style="color:orange">Weather API key not set.</div>'; return; }
+  try{ const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${WEATHER_API_KEY}&units=metric`); const data = await res.json(); if(data.cod && data.cod !== 200){ weatherResult.innerHTML = '<div style="color:orange">City not found — try "City, CountryCode".</div>'; return; } displayWeatherFromData(data); userSet('lastWeather', city); } catch(e){ weatherResult.innerHTML = '<div style="color:red">Network error</div>'; }
 }
 async function fetchWeatherByCoords(lat, lon){
-  try{
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`);
-    const data = await res.json();
-    if(data.cod && data.cod !== 200){ weatherResult.innerHTML = `<div style="color:orange">Location data not found.</div>`; return; }
-    displayWeatherFromData(data); userDataSet('lastWeather', data.name);
-  }catch(e){ weatherResult.innerHTML = `<div style="color:red">Network error</div>`; }
+  if(!WEATHER_API_KEY){ weatherResult.innerHTML = '<div style="color:orange">Weather API key not set.</div>'; return; }
+  try{ const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`); const data = await res.json(); if(data.cod && data.cod !== 200){ weatherResult.innerHTML = '<div style="color:orange">Location data not found.</div>'; return; } displayWeatherFromData(data); userSet('lastWeather', data.name); } catch(e){ weatherResult.innerHTML = '<div style="color:red">Network error</div>'; }
 }
 $('weatherSearchBtn').addEventListener('click', ()=> fetchWeatherByCity($('weatherCity').value.trim()));
-$('weatherDetectBtn').addEventListener('click', ()=>{
-  if(!navigator.geolocation) return alert('Geolocation not supported');
-  navigator.geolocation.getCurrentPosition(p=> fetchWeatherByCoords(p.coords.latitude, p.coords.longitude), ()=> alert('Location denied or unavailable'));
-});
-(function initWeather(){
-  const last = userDataGet('lastWeather', null);
+$('weatherDetectBtn').addEventListener('click', ()=> { if(!navigator.geolocation) return alert('Geolocation not supported'); navigator.geolocation.getCurrentPosition(p=> fetchWeatherByCoords(p.coords.latitude, p.coords.longitude), ()=> alert('Location denied or unavailable')); });
+(function tryInitWeather(){
+  // if user had last weather, attempt to show
+  if(!currentUser) return;
+  const last = userGet('lastWeather', null);
   if(last){ $('weatherCity').value = last; fetchWeatherByCity(last); }
-  else if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p=> fetchWeatherByCoords(p.coords.latitude, p.coords.longitude), ()=>{/* silent */});
+  else if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p=> fetchWeatherByCoords(p.coords.latitude, p.coords.longitude), ()=>{/* ignore */});
 })();
 
-/* ==========================
-   Live backgrounds
-   ========================== */
-const backgrounds = [
-  'linear-gradient(120deg,#0b0b0d,#111217)',
-  'linear-gradient(120deg,#06283d,#0f4c75)',
-  'linear-gradient(120deg,#1f1c2c,#928dab)',
-  'linear-gradient(120deg,#0f0c29,#302b63,#24243e)'
-];
-let bgIndex = 0; let bgAnim = null;
-function applyBg(i){ document.body.style.background = backgrounds[i % backgrounds.length]; }
+/* ---------- LIVE BACKGROUNDS ---------- */
+const backgrounds = ['linear-gradient(120deg,#071018,#0b1b2a)','linear-gradient(120deg,#06283d,#0f4c75)','linear-gradient(120deg,#1f1c2c,#928dab)','linear-gradient(120deg,#0f0c29,#302b63,#24243e)'];
+let bgIndex = 0, bgAnim = null;
+function applyBg(i){ document.body.style.background = backgrounds[i%backgrounds.length]; }
 $('bgNext').addEventListener('click', ()=> { bgIndex=(bgIndex+1)%backgrounds.length; applyBg(bgIndex); });
 $('bgToggle').addEventListener('click', ()=> {
-  if(!bgAnim){ bgAnim = setInterval(()=>{ bgIndex=(bgIndex+1)%backgrounds.length; applyBg(bgIndex); }, 4000); $('bgToggle').textContent='Stop'; }
-  else{ clearInterval(bgAnim); bgAnim = null; $('bgToggle').textContent='Animate'; }
+  if(!bgAnim){ bgAnim = setInterval(()=>{ bgIndex=(bgIndex+1)%backgrounds.length; applyBg(bgIndex); }, 4000); $('bgToggle').textContent='Stop'; } else { clearInterval(bgAnim); bgAnim = null; $('bgToggle').textContent='Animate'; }
 });
 applyBg(bgIndex);
 
-/* ==========================
-   Profile edit & account removal
-   ========================== */
-$('editPic').addEventListener('change', e=>{
+/* ---------- PROFILE EDIT ---------- */
+$('editPic').addEventListener('change', e => {
+  if(!currentUser) return alert('Log in first');
   const f = e.target.files[0]; if(!f) return;
-  const r = new FileReader(); r.onload = ()=>{
+  const r = new FileReader(); r.onload = ()=> {
     $('profilePic').src = r.result; $('asidePic').src = r.result;
-    const users = loadUsers(); users[currentUser].pic = r.result; saveUsers(users);
+    const users = loadUsers(); if(!users[currentUser]) users[currentUser] = { passwordHash:'', bio:'', pic:'', joined:new Date().toISOString() };
+    users[currentUser].pic = r.result; saveUsers(users);
   }; r.readAsDataURL(f);
 });
-$('saveProfileBtn').addEventListener('click', ()=>{
-  const users = loadUsers(); users[currentUser].bio = $('editBio').value; saveUsers(users); renderSignedInView(users[currentUser]);
-  alert('Profile saved.');
+$('saveProfileBtn').addEventListener('click', ()=> {
+  if(!currentUser) return alert('Log in first');
+  const users = loadUsers();
+  if(!users[currentUser]) users[currentUser] = { passwordHash:'', bio:'', pic:'', joined:new Date().toISOString() };
+  users[currentUser].bio = $('editBio').value;
+  saveUsers(users);
+  $('asideBio').textContent = users[currentUser].bio;
+  alert('Profile saved');
 });
 $('deleteAccountBtn').addEventListener('click', ()=>{
-  if(!confirm('Delete account and all data? This cannot be undone.')) return;
+  if(!currentUser) return alert('Log in first');
+  if(!confirm('Delete account and all data? This is permanent.')) return;
   const users = loadUsers(); delete users[currentUser]; saveUsers(users);
-  // remove per-user data
-  Object.keys(localStorage).forEach(k=>{ if(k.startsWith(currentUser+'::')) localStorage.removeItem(k); });
+  // remove per-user keys
+  Object.keys(localStorage).forEach(k => { if(k.startsWith(currentUser + '::')) localStorage.removeItem(k); });
   logout();
 });
 
-/* ==========================
-   Stats
-   ========================== */
+/* ---------- STATS ---------- */
 function computeStats(){
-  const journal = userDataGet('journal', []), notes = userDataGet('notes', []), moods = userDataGet('moods', []), events = userDataGet('events', {});
+  if(!currentUser) return { journal:0, notes:0, moods:0, events:0 };
+  const journal = userGet('journal', []), notes = userGet('notes', []), moods = userGet('moods', []), events = userGet('events', {});
   return { journal: journal.length, notes: notes.length, moods: moods.length, events: Object.keys(events).length };
 }
 function renderStats(){
   const s = computeStats();
   $('statsArea').innerHTML = `
-    <div class="stat" style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Journal</div><div>${s.journal}</div></div>
-    <div class="stat" style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Notes</div><div>${s.notes}</div></div>
-    <div class="stat" style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Moods</div><div>${s.moods}</div></div>
-    <div class="stat" style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Events</div><div>${s.events}</div></div>
+    <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Journal</div><div>${s.journal}</div></div>
+    <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Notes</div><div>${s.notes}</div></div>
+    <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Moods</div><div>${s.moods}</div></div>
+    <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Events</div><div>${s.events}</div></div>
   `;
   $('profileStats').innerHTML = $('statsArea').innerHTML;
 }
 
-/* ==========================
-   Render all user data when login
-   ========================== */
+/* ---------- LOAD / BOOT ---------- */
 function renderAllUserData(){
   renderJournalList(); renderNotesList(); renderEvents(); renderLaps(); renderMoodHistory(); renderStats(); loadStopwatchState();
 }
-
-/* ==========================
-   Load stopwatch state on login
-   ========================== */
 function loadStopwatchState(){
-  const s = userDataGet('sw_state', null);
-  if(s){ swElapsed = s.swElapsed || 0; swRunning = s.swRunning || false; if(swRunning){ swStart = Date.now(); swInterval = setInterval(swUpdate,40); } swUpdate(); }
+  const s = userGet('sw_state', null);
+  if(s){ swElapsed = s.swElapsed||0; swRunning = s.swRunning||false; if(swRunning){ swStart = Date.now(); swInterval = setInterval(swUpdate,40); } swUpdate(); }
   renderLaps();
 }
 
-/* ==========================
-   Initial boot
-   ========================== */
-if(!currentUser) { showAuth(); renderSignedOutView(); } else { initForCurrentUser(); }
+/* ensure logout aside works */
+$('logoutBtnAside')?.addEventListener('click', logout);
 
-/* make sure Logout aside button works */
-$('logoutBtnAside').addEventListener('click', logout);
-
-/* slight safety: refresh stats whenever localStorage.setItem is called */
+/* persist renderStats whenever localStorage changes (best-effort) */
 (function(){
   const orig = localStorage.setItem;
   localStorage.setItem = function(k,v){ orig.apply(this, arguments); try{ renderStats(); }catch(e){} };
 })();
 
-/* Expose navTo globally for quick calls */
-window.navTo = navTo;
 </script>
 </body>
 </html>
