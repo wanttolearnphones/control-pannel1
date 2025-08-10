@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Ritters Control Panel (All-in-one)</title>
+<title>Ritters Control Panel</title>
 <style>
   :root{
     --bg:#0b0b0f; --panel:rgba(255,255,255,0.03); --accent:#6c63ff; --muted:#9aa0b4; --text:#eaf0ff;
@@ -468,4 +468,195 @@ function renderEvents(){
 $('saveEventBtn').addEventListener('click', ()=>{
   const date = $('eventDate').value, title = $('eventTitle').value.trim();
   if(!date || !title) return alert('Pick a date and title.');
-  c
+  const events = userDataGet('events', {});
+  if(!events[date]) events[date]=[];
+  events[date].push({ id: Date.now(), title });
+  userDataSet('events', events); renderEvents(); renderStats();
+});
+window.deleteEvent = function(d,id){
+  const events = userDataGet('events', {});
+  if(!events[d]) return;
+  events[d] = events[d].filter(e=> e.id !== id);
+  if(events[d].length===0) delete events[d];
+  userDataSet('events', events); renderEvents(); renderStats();
+}
+
+/* ==========================
+   Stopwatch
+   ========================== */
+let swInterval = null, swStart = 0, swElapsed = 0, swRunning = false;
+function swFormat(ms){
+  const hours = Math.floor(ms/3600000);
+  const mins = Math.floor(ms%3600000/60000);
+  const secs = Math.floor(ms%60000/1000);
+  const msecs = ms%1000;
+  return `${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}.${String(msecs).padStart(3,'0')}`;
+}
+function swUpdate(){
+  const now = Date.now();
+  const diff = (swRunning ? now - swStart + swElapsed : swElapsed);
+  $('stopwatchDisplay').textContent = swFormat(diff);
+}
+$('startSW').addEventListener('click', ()=>{ if(swRunning) return; swStart = Date.now(); swRunning = true; swInterval = setInterval(swUpdate, 40); });
+$('stopSW').addEventListener('click', ()=>{ if(!swRunning) return; clearInterval(swInterval); swElapsed += Date.now() - swStart; swRunning = false; swUpdate(); persistStopwatch(); });
+$('resetSW').addEventListener('click', ()=>{ if(confirm('Reset stopwatch?')){ clearInterval(swInterval); swStart=0; swElapsed=0; swRunning=false; $('stopwatchDisplay').textContent='00:00:00.000'; userDataSet('sw_laps', []); renderLaps(); persistStopwatch(); }});
+$('lapSW').addEventListener('click', ()=>{ const val = $('stopwatchDisplay').textContent; const laps = userDataGet('sw_laps', []); laps.unshift({ id: Date.now(), time: val }); userDataSet('sw_laps', laps); renderLaps(); renderStats(); });
+function renderLaps(){ const laps = userDataGet('sw_laps', []); $('lapsContainer').innerHTML = laps.map(l=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.02)">${l.time}<button class="btn alt" onclick="deleteLap(${l.id})">Del</button></div>`).join(''); }
+window.deleteLap = function(id){ let laps = userDataGet('sw_laps', []); laps = laps.filter(l => l.id !== id); userDataSet('sw_laps', laps); renderLaps(); renderStats(); }
+function persistStopwatch(){ userDataSet('sw_state', { swElapsed, swRunning, swStart: swRunning ? swStart : 0 }); }
+function loadStopwatchState(){ const s = userDataGet('sw_state', null); if(s){ swElapsed = s.swElapsed || 0; swRunning = s.swRunning || false; if(swRunning){ swStart = Date.now(); swInterval = setInterval(swUpdate,40); } swUpdate(); } renderLaps(); }
+
+/* ==========================
+   Music
+   ========================== */
+$('playFileBtn').addEventListener('click', ()=>{
+  const f = $('musicFile').files[0]; if(!f) return alert('Pick an audio file.');
+  const url = URL.createObjectURL(f); $('musicPlayer').src = url; $('musicPlayer').play();
+});
+
+/* ==========================
+   Mood Tracker
+   ========================== */
+$('saveMoodBtn').addEventListener('click', ()=>{
+  const mood = $('moodSelect').value, note = $('moodNote').value.trim();
+  const arr = userDataGet('moods', []); arr.unshift({ id: Date.now(), mood, note, t: new Date().toISOString() });
+  userDataSet('moods', arr); $('moodNote').value=''; renderMoodHistory(); renderStats();
+});
+function renderMoodHistory(){ const arr = userDataGet('moods', []); $('moodHistory').innerHTML = arr.map(m=>`<div class="card"><div style="display:flex;justify-content:space-between"><div>${m.mood} ${m.note?m.note:''}</div><small class="small">${new Date(m.t).toLocaleString()}</small></div></div>`).join(''); }
+renderMoodHistory();
+
+/* ==========================
+   Weather (auto detect + manual)
+   ========================== */
+const weatherResult = $('weatherResult'), asideWeather = $('asideWeather');
+async function displayWeatherFromData(data){
+  asideWeather.textContent = `${Math.round(data.main.temp)}°C • ${data.weather[0].main}`;
+  weatherResult.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px">
+      <div><strong>${data.name}, ${data.sys.country}</strong><div class="small">${data.weather[0].description}</div></div>
+      <div style="font-size:1.6rem">${Math.round(data.main.temp)}°C</div>
+    </div>
+    <div style="margin-top:8px" class="small">Humidity ${data.main.humidity}% • Wind ${data.wind.speed} m/s</div>
+  `;
+}
+async function fetchWeatherByCity(city){
+  if(!city) return alert('Enter a city, e.g. "London, GB"');
+  try{
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${WEATHER_API_KEY}&units=metric`);
+    const data = await res.json();
+    if(data.cod && data.cod !== 200){ weatherResult.innerHTML = `<div style="color:orange">City not found — try "City, CountryCode".</div>`; return; }
+    displayWeatherFromData(data); userDataSet('lastWeather', city);
+  }catch(e){ weatherResult.innerHTML = `<div style="color:red">Network error</div>`; }
+}
+async function fetchWeatherByCoords(lat, lon){
+  try{
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`);
+    const data = await res.json();
+    if(data.cod && data.cod !== 200){ weatherResult.innerHTML = `<div style="color:orange">Location data not found.</div>`; return; }
+    displayWeatherFromData(data); userDataSet('lastWeather', data.name);
+  }catch(e){ weatherResult.innerHTML = `<div style="color:red">Network error</div>`; }
+}
+$('weatherSearchBtn').addEventListener('click', ()=> fetchWeatherByCity($('weatherCity').value.trim()));
+$('weatherDetectBtn').addEventListener('click', ()=>{
+  if(!navigator.geolocation) return alert('Geolocation not supported');
+  navigator.geolocation.getCurrentPosition(p=> fetchWeatherByCoords(p.coords.latitude, p.coords.longitude), ()=> alert('Location denied or unavailable'));
+});
+(function initWeather(){
+  const last = userDataGet('lastWeather', null);
+  if(last){ $('weatherCity').value = last; fetchWeatherByCity(last); }
+  else if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p=> fetchWeatherByCoords(p.coords.latitude, p.coords.longitude), ()=>{/* silent */});
+})();
+
+/* ==========================
+   Live backgrounds
+   ========================== */
+const backgrounds = [
+  'linear-gradient(120deg,#0b0b0d,#111217)',
+  'linear-gradient(120deg,#06283d,#0f4c75)',
+  'linear-gradient(120deg,#1f1c2c,#928dab)',
+  'linear-gradient(120deg,#0f0c29,#302b63,#24243e)'
+];
+let bgIndex = 0; let bgAnim = null;
+function applyBg(i){ document.body.style.background = backgrounds[i % backgrounds.length]; }
+$('bgNext').addEventListener('click', ()=> { bgIndex=(bgIndex+1)%backgrounds.length; applyBg(bgIndex); });
+$('bgToggle').addEventListener('click', ()=> {
+  if(!bgAnim){ bgAnim = setInterval(()=>{ bgIndex=(bgIndex+1)%backgrounds.length; applyBg(bgIndex); }, 4000); $('bgToggle').textContent='Stop'; }
+  else{ clearInterval(bgAnim); bgAnim = null; $('bgToggle').textContent='Animate'; }
+});
+applyBg(bgIndex);
+
+/* ==========================
+   Profile edit & account removal
+   ========================== */
+$('editPic').addEventListener('change', e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader(); r.onload = ()=>{
+    $('profilePic').src = r.result; $('asidePic').src = r.result;
+    const users = loadUsers(); users[currentUser].pic = r.result; saveUsers(users);
+  }; r.readAsDataURL(f);
+});
+$('saveProfileBtn').addEventListener('click', ()=>{
+  const users = loadUsers(); users[currentUser].bio = $('editBio').value; saveUsers(users); renderSignedInView(users[currentUser]);
+  alert('Profile saved.');
+});
+$('deleteAccountBtn').addEventListener('click', ()=>{
+  if(!confirm('Delete account and all data? This cannot be undone.')) return;
+  const users = loadUsers(); delete users[currentUser]; saveUsers(users);
+  // remove per-user data
+  Object.keys(localStorage).forEach(k=>{ if(k.startsWith(currentUser+'::')) localStorage.removeItem(k); });
+  logout();
+});
+
+/* ==========================
+   Stats
+   ========================== */
+function computeStats(){
+  const journal = userDataGet('journal', []), notes = userDataGet('notes', []), moods = userDataGet('moods', []), events = userDataGet('events', {});
+  return { journal: journal.length, notes: notes.length, moods: moods.length, events: Object.keys(events).length };
+}
+function renderStats(){
+  const s = computeStats();
+  $('statsArea').innerHTML = `
+    <div class="stat" style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Journal</div><div>${s.journal}</div></div>
+    <div class="stat" style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Notes</div><div>${s.notes}</div></div>
+    <div class="stat" style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Moods</div><div>${s.moods}</div></div>
+    <div class="stat" style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Events</div><div>${s.events}</div></div>
+  `;
+  $('profileStats').innerHTML = $('statsArea').innerHTML;
+}
+
+/* ==========================
+   Render all user data when login
+   ========================== */
+function renderAllUserData(){
+  renderJournalList(); renderNotesList(); renderEvents(); renderLaps(); renderMoodHistory(); renderStats(); loadStopwatchState();
+}
+
+/* ==========================
+   Load stopwatch state on login
+   ========================== */
+function loadStopwatchState(){
+  const s = userDataGet('sw_state', null);
+  if(s){ swElapsed = s.swElapsed || 0; swRunning = s.swRunning || false; if(swRunning){ swStart = Date.now(); swInterval = setInterval(swUpdate,40); } swUpdate(); }
+  renderLaps();
+}
+
+/* ==========================
+   Initial boot
+   ========================== */
+if(!currentUser) { showAuth(); renderSignedOutView(); } else { initForCurrentUser(); }
+
+/* make sure Logout aside button works */
+$('logoutBtnAside').addEventListener('click', logout);
+
+/* slight safety: refresh stats whenever localStorage.setItem is called */
+(function(){
+  const orig = localStorage.setItem;
+  localStorage.setItem = function(k,v){ orig.apply(this, arguments); try{ renderStats(); }catch(e){} };
+})();
+
+/* Expose navTo globally for quick calls */
+window.navTo = navTo;
+</script>
+</body>
+</html>
