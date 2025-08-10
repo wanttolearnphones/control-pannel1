@@ -1,443 +1,471 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Ritters Control Panel</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <style>
-    :root{
-      --bg1:#0b0b0f; --panel:rgba(255,255,255,0.03); --accent:#6c63ff; --muted:#9aa0b4; --text:#eaf0ff;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Segoe UI,Roboto,Arial;background:linear-gradient(120deg,#0b0b0d,#111217);color:var(--text);min-height:100vh}
-    header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter: blur(2px)}
-    .left{display:flex;align-items:center;gap:14px}
-    h1{font-size:1.1rem;margin:0}
-    .top-buttons{display:flex;gap:8px}
-    .btn{background:var(--accent);border:none;padding:8px 12px;border-radius:10px;color:#fff;cursor:pointer;font-weight:600}
-    .btn.alt{background:#2b2b2f}
-    .container{display:grid;grid-template-columns:260px 1fr 340px;gap:16px;padding:18px}
-    nav{background:var(--panel);padding:14px;border-radius:12px;height:calc(100vh - 120px);overflow:auto}
-    nav button{display:block;width:100%;text-align:left;padding:10px;border-radius:8px;border:none;background:transparent;color:var(--text);cursor:pointer;margin-bottom:6px}
-    nav button.active{background:rgba(108,99,255,0.12)}
-    main{background:var(--panel);padding:14px;border-radius:12px;min-height:400px;overflow:auto}
-    aside{background:var(--panel);padding:14px;border-radius:12px;height:calc(100vh - 120px);overflow:auto}
-    .profile-pic{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.04)}
-    .field{margin:8px 0}
-    input,textarea,select{width:100%;padding:8px;border-radius:8px;border:none;background:rgba(255,255,255,0.02);color:var(--text)}
-    .small{font-size:0.9rem;color:var(--muted)}
-    .card{background:rgba(0,0,0,0.15);padding:12px;border-radius:10px;margin-bottom:12px}
-    .stat{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px}
-    .laps{max-height:160px;overflow:auto;padding:6px;background:rgba(255,255,255,0.02);border-radius:8px}
-    footer{padding:12px;text-align:center;color:var(--muted);font-size:0.85rem}
-    @media(max-width:1000px){.container{grid-template-columns:1fr;grid-auto-rows:min-content}aside{order:3}}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Ritters Control Panel (All-in-one)</title>
+<style>
+  :root{
+    --bg:#0b0b0f; --panel:rgba(255,255,255,0.03); --accent:#6c63ff; --muted:#9aa0b4; --text:#eaf0ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+  header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter: blur(2px)}
+  h1{margin:0;font-size:1.05rem}
+  .top-actions{display:flex;gap:8px}
+  .btn{background:var(--accent);border:none;padding:8px 12px;border-radius:10px;color:#fff;cursor:pointer;font-weight:600}
+  .btn.alt{background:#2b2b2f}
+  .layout{display:grid;grid-template-columns:260px 1fr 320px;gap:16px;padding:18px;flex:1}
+  nav{background:var(--panel);padding:14px;border-radius:12px;height:calc(100vh - 120px);overflow:auto}
+  nav button{display:block;width:100%;text-align:left;padding:12px;border-radius:8px;border:none;background:transparent;color:var(--text);cursor:pointer;margin-bottom:8px}
+  nav button.active{background:rgba(108,99,255,0.12)}
+  main{background:var(--panel);padding:14px;border-radius:12px;min-height:400px;overflow:auto}
+  aside{background:var(--panel);padding:14px;border-radius:12px;height:calc(100vh - 120px);overflow:auto}
+  section{display:none}
+  section.active{display:block}
+  .card{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;margin-bottom:12px}
+  input,textarea,select{width:100%;padding:8px;border-radius:8px;border:none;background:rgba(255,255,255,0.02);color:var(--text);margin-top:8px}
+  .profile-pic{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.04)}
+  .small{font-size:0.9rem;color:var(--muted)}
+  .laps{max-height:160px;overflow:auto;padding:6px;background:rgba(255,255,255,0.02);border-radius:8px;margin-top:8px}
+  footer{padding:12px;text-align:center;color:var(--muted);font-size:0.85rem}
+  /* login modal */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999}
+  .modal{width:360px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:18px;border-radius:12px}
+  .row{display:flex;gap:8px}
+  @media(max-width:1000px){.layout{grid-template-columns:1fr;grid-auto-rows:min-content}aside{order:3}}
+</style>
 </head>
 <body>
-  <header>
-    <div class="left">
-      <h1>Ritters Control Panel</h1>
-      <div class="small" id="welcomeText">Welcome</div>
-    </div>
-    <div class="top-buttons">
-      <button class="btn" id="openProfileBtn">Profile</button>
-      <button class="btn alt" id="logoutBtn">Logout</button>
-    </div>
-  </header>
 
-  <div class="container">
-    <!-- NAV -->
-    <nav id="nav">
-      <button data-panel="dashboard" class="active">Dashboard</button>
-      <button data-panel="journal">Journal</button>
-      <button data-panel="notes">Notes</button>
-      <button data-panel="calendar">Calendar</button>
-      <button data-panel="stopwatch">Stopwatch</button>
-      <button data-panel="music">Music</button>
-      <button data-panel="mood">Mood Tracker</button>
-      <button data-panel="weather">Weather</button>
-      <button data-panel="profile">Profile</button>
-    </nav>
-
-    <!-- MAIN -->
-    <main id="main">
-      <!-- Dashboard -->
-      <section id="panel-dashboard" class="panel">
-        <h2>Dashboard</h2>
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <div style="flex:1" class="card">
-            <h3 class="small">Quick Tools</h3>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-              <button class="btn" onclick="openPanel('stopwatch')">Open Stopwatch</button>
-              <button class="btn" onclick="openPanel('music')">Open Music</button>
-              <button class="btn" onclick="openPanel('weather')">Open Weather</button>
-            </div>
-          </div>
-          <div style="width:320px" class="card">
-            <h3 class="small">Stats</h3>
-            <div id="statsArea"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Journal -->
-      <section id="panel-journal" class="panel" style="display:none">
-        <h2>Journal</h2>
-        <div class="field">
-          <input id="journalTitle" placeholder="Title" />
-        </div>
-        <div class="field">
-          <textarea id="journalBody" rows="6" placeholder="Write something..."></textarea>
-        </div>
-        <div style="display:flex;gap:8px">
-          <button class="btn" id="saveJournalBtn">Save Entry</button>
-          <button class="btn alt" id="clearJournalBtn">Clear All</button>
-        </div>
-        <h3 style="margin-top:12px">Entries</h3>
-        <div id="journalList"></div>
-      </section>
-
-      <!-- Notes -->
-      <section id="panel-notes" class="panel" style="display:none">
-        <h2>Notes</h2>
-        <div class="field"><input id="noteTitle" placeholder="Note title" /></div>
-        <div class="field"><textarea id="noteBody" rows="4" placeholder="Your note..."></textarea></div>
-        <div style="display:flex;gap:8px">
-          <button class="btn" id="saveNoteBtn">Save Note</button>
-          <button class="btn alt" id="clearNotesBtn">Clear All</button>
-        </div>
-        <h3 style="margin-top:12px">Saved Notes</h3>
-        <div id="notesList"></div>
-      </section>
-
-      <!-- Calendar -->
-      <section id="panel-calendar" style="display:none">
-        <h2>Calendar</h2>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input type="date" id="eventDate" />
-          <input id="eventTitle" placeholder="Event title" />
-          <button class="btn" id="saveEventBtn">Add Event</button>
-        </div>
-        <div style="margin-top:12px" id="calendarEventsList"></div>
-      </section>
-
-      <!-- Stopwatch -->
-      <section id="panel-stopwatch" style="display:none">
-        <h2>Stopwatch</h2>
-        <div style="font-weight:700;font-size:1.6rem" id="stopwatchDisplay">00:00:00.000</div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button class="btn" id="startSW">Start</button>
-          <button class="btn alt" id="stopSW">Stop</button>
-          <button class="btn" id="resetSW">Reset</button>
-          <button class="btn alt" id="lapSW">Lap</button>
-        </div>
-        <h4 style="margin-top:12px">Laps</h4>
-        <div class="laps" id="lapsContainer"></div>
-      </section>
-
-      <!-- Music -->
-      <section id="panel-music" style="display:none">
-        <h2>Music Player</h2>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input id="musicFile" type="file" accept="audio/*" />
-          <button class="btn" id="playFileBtn">Load</button>
-        </div>
-        <audio id="musicPlayer" controls style="margin-top:12px;width:100%"></audio>
-      </section>
-
-      <!-- Mood -->
-      <section id="panel-mood" style="display:none">
-        <h2>Mood Tracker</h2>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <select id="moodSelect">
-            <option value="😁">😁 Happy</option>
-            <option value="🙂">🙂 Fine</option>
-            <option value="😐">😐 Meh</option>
-            <option value="😔">😔 Sad</option>
-            <option value="😡">😠 Angry</option>
-            <option value="😴">😴 Tired</option>
-          </select>
-          <input id="moodNote" placeholder="Optional note..." />
-          <button class="btn" id="saveMoodBtn">Save Mood</button>
-        </div>
-        <h4 style="margin-top:12px">Mood History</h4>
-        <div id="moodHistory"></div>
-      </section>
-
-      <!-- Weather -->
-      <section id="panel-weather" style="display:none">
-        <h2>Weather</h2>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input id="weatherCity" placeholder="City (example: London, GB)" />
-          <button class="btn" id="weatherSearchBtn">Search</button>
-          <button class="btn alt" id="weatherDetectBtn">Use My Location</button>
-        </div>
-        <div style="margin-top:12px" id="weatherResult"></div>
-      </section>
-
-      <!-- Profile (inline quick edit) -->
-      <section id="panel-profile" style="display:none">
-        <h2>Profile</h2>
-        <div style="display:flex;gap:12px;align-items:center">
-          <img id="profilePic" class="profile-pic" src="" alt="pic" />
-          <div style="flex:1">
-            <div class="small">Username</div>
-            <div id="profileName" style="font-weight:700"></div>
-            <div class="small" id="profileJoined"></div>
-          </div>
-        </div>
-        <div style="margin-top:12px">
-          <div class="field"><input id="editBio" placeholder="Bio" /></div>
-          <div class="field"><input id="editPic" type="file" accept="image/*" /></div>
-          <div style="display:flex;gap:8px"><button class="btn" id="saveProfileBtn">Save Profile</button></div>
-        </div>
-        <h3 style="margin-top:12px">Stats</h3>
-        <div id="profileStats"></div>
-      </section>
-    </main>
-
-    <!-- ASIDE / Right column -->
-    <aside>
-      <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">
-        <img id="asidePic" class="profile-pic" src="" alt="pic" />
-        <div>
-          <div id="asideName" style="font-weight:700"></div>
-          <div class="small" id="asideBio"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="small">Quick Weather</div>
-        <div id="asideWeather" style="margin-top:8px">—</div>
-      </div>
-
-      <div class="card">
-        <div class="small">Live Background</div>
-        <div style="margin-top:8px">
-          <button class="btn" id="bgNext">Next Background</button>
-          <button class="btn alt" id="bgToggle">Toggle Animation</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="small">Session</div>
-        <div style="margin-top:8px">
-          <div id="currentUserLabel"></div>
-          <button class="btn alt" id="logoutBtn2" style="margin-top:8px">Logout</button>
-        </div>
-      </div>
-    </aside>
+<header>
+  <div style="display:flex;align-items:center;gap:12px">
+    <h1>Ritters Control Panel</h1>
+    <div id="welcomeText" class="small">Please sign in</div>
   </div>
+  <div class="top-actions">
+    <button class="btn" id="themeToggle">Toggle Theme</button>
+    <button class="btn alt" id="logoutBtn" style="display:none">Logout</button>
+  </div>
+</header>
 
-  <footer>Ritters Control Panel • All data stored locally in your browser</footer>
+<div class="layout">
+  <!-- NAV -->
+  <nav id="nav">
+    <button data-tab="dashboard" class="active">Dashboard</button>
+    <button data-tab="journal">Journal</button>
+    <button data-tab="notes">Notes</button>
+    <button data-tab="calendar">Calendar</button>
+    <button data-tab="stopwatch">Stopwatch</button>
+    <button data-tab="music">Music</button>
+    <button data-tab="mood">Mood Tracker</button>
+    <button data-tab="weather">Weather</button>
+    <button data-tab="profile">Profile</button>
+  </nav>
+
+  <!-- MAIN -->
+  <main>
+    <section id="tab-dashboard" class="active">
+      <h2>Dashboard</h2>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div style="flex:1" class="card">
+          <h3 class="small">Quick Tools</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+            <button class="btn" onclick="navTo('stopwatch')">Open Stopwatch</button>
+            <button class="btn" onclick="navTo('music')">Open Music</button>
+            <button class="btn" onclick="navTo('weather')">Open Weather</button>
+          </div>
+        </div>
+        <div style="width:320px" class="card">
+          <h3 class="small">Stats</h3>
+          <div id="statsArea"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-journal">
+      <h2>Journal</h2>
+      <input id="journalTitle" placeholder="Title">
+      <textarea id="journalBody" rows="6" placeholder="Write..."></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn" id="saveJournalBtn">Save Entry</button>
+        <button class="btn alt" id="clearJournalBtn">Clear All</button>
+      </div>
+      <h3 style="margin-top:12px">Entries</h3>
+      <div id="journalList"></div>
+    </section>
+
+    <section id="tab-notes">
+      <h2>Notes</h2>
+      <input id="noteTitle" placeholder="Note title">
+      <textarea id="noteBody" rows="4" placeholder="Your note..."></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn" id="saveNoteBtn">Save Note</button>
+        <button class="btn alt" id="clearNotesBtn">Clear All</button>
+      </div>
+      <h3 style="margin-top:12px">Saved Notes</h3>
+      <div id="notesList"></div>
+    </section>
+
+    <section id="tab-calendar">
+      <h2>Calendar</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input type="date" id="eventDate">
+        <input id="eventTitle" placeholder="Event title">
+        <button class="btn" id="saveEventBtn">Add Event</button>
+      </div>
+      <div style="margin-top:12px" id="calendarEventsList"></div>
+    </section>
+
+    <section id="tab-stopwatch">
+      <h2>Stopwatch</h2>
+      <div id="stopwatchDisplay" style="font-weight:700;font-size:1.4rem">00:00:00.000</div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn" id="startSW">Start</button>
+        <button class="btn alt" id="stopSW">Stop</button>
+        <button class="btn" id="resetSW">Reset</button>
+        <button class="btn alt" id="lapSW">Lap</button>
+      </div>
+      <h4 style="margin-top:12px">Laps</h4>
+      <div class="laps" id="lapsContainer"></div>
+    </section>
+
+    <section id="tab-music">
+      <h2>Music Player</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="musicFile" type="file" accept="audio/*">
+        <button class="btn" id="playFileBtn">Load & Play</button>
+      </div>
+      <audio id="musicPlayer" controls style="margin-top:12px;width:100%"></audio>
+    </section>
+
+    <section id="tab-mood">
+      <h2>Mood Tracker</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="moodSelect">
+          <option value="😁">😁 Happy</option>
+          <option value="🙂">🙂 Fine</option>
+          <option value="😐">😐 Meh</option>
+          <option value="😔">😔 Sad</option>
+          <option value="😡">😠 Angry</option>
+          <option value="😴">😴 Tired</option>
+        </select>
+        <input id="moodNote" placeholder="Optional note...">
+        <button class="btn" id="saveMoodBtn">Save Mood</button>
+      </div>
+      <h4 style="margin-top:12px">Mood History</h4>
+      <div id="moodHistory"></div>
+    </section>
+
+    <section id="tab-weather">
+      <h2>Weather</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="weatherCity" placeholder="City (e.g. London, GB)">
+        <button class="btn" id="weatherSearchBtn">Search</button>
+        <button class="btn alt" id="weatherDetectBtn">Use My Location</button>
+      </div>
+      <div style="margin-top:12px" id="weatherResult"></div>
+    </section>
+
+    <section id="tab-profile">
+      <h2>Profile</h2>
+      <div style="display:flex;gap:12px;align-items:center">
+        <img id="profilePic" class="profile-pic" src="" alt="pic">
+        <div style="flex:1">
+          <div class="small">Username</div>
+          <div id="profileName" style="font-weight:700"></div>
+          <div class="small" id="profileJoined"></div>
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <input id="editBio" placeholder="Bio">
+        <input id="editPic" type="file" accept="image/*">
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn" id="saveProfileBtn">Save Profile</button>
+          <button class="btn alt" id="deleteAccountBtn">Delete Account</button>
+        </div>
+      </div>
+      <h3 style="margin-top:12px">Your Stats</h3>
+      <div id="profileStats"></div>
+    </section>
+  </main>
+
+  <!-- ASIDE -->
+  <aside>
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+      <img id="asidePic" class="profile-pic" src="">
+      <div>
+        <div id="asideName" style="font-weight:700"></div>
+        <div class="small" id="asideBio"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="small">Quick Weather</div>
+      <div id="asideWeather" style="margin-top:8px">—</div>
+    </div>
+
+    <div class="card">
+      <div class="small">Live Background</div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn" id="bgNext">Next</button>
+        <button class="btn alt" id="bgToggle">Animate</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="small">Session</div>
+      <div style="margin-top:8px">
+        <div id="currentUserLabel"></div>
+        <button class="btn alt" id="logoutBtnAside" style="margin-top:8px">Logout</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<footer>Ritters Control Panel • Data stored locally</footer>
+
+<!-- LOGIN/SIGNUP MODAL (inside same file) -->
+<div id="authModal" class="modal-backdrop" style="display:none">
+  <div class="modal">
+    <div style="display:flex;gap:12px;align-items:center">
+      <img id="authPreview" class="profile-pic" src="">
+      <div style="flex:1">
+        <h2 id="authTitle">Welcome</h2>
+        <div class="small" id="authSubtitle">Sign up or login to continue</div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <input id="authUser" placeholder="Username">
+      <input id="authPass" placeholder="Password" type="password">
+      <input id="authBio" placeholder="Short bio (optional)">
+      <input id="authPic" type="file" accept="image/*">
+      <div class="row" style="margin-top:10px">
+        <button id="signupBtn" class="btn">Sign Up</button>
+        <button id="loginBtn" class="btn alt">Login</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="demoBtn" class="btn">Demo Account</button>
+        <button id="closeAuth" class="btn alt">Close</button>
+      </div>
+      <div id="authMessage" class="small" style="margin-top:10px;color:#f8d7da"></div>
+    </div>
+  </div>
+</div>
 
 <script>
-(function(){
-  /* ------------- CONFIG & KEYS ------------- */
-  const usersKey = 'ritters_users';
-  const currentUserKey = 'ritters_currentUser';
-  const WEATHER_API_KEY = 'bc35dc734bb6fb3c973c5c4de9d0c0e2'; // your key
-  // Helper to build per-user storage namespace
-  function ukey(s){ return `${currentUser}_${s}`; }
+/* =========================
+   Single-file Control Panel
+   ========================= */
 
-  /* ------------- AUTH GUARD ------------- */
-  const currentUser = localStorage.getItem(currentUserKey);
-  if(!currentUser){
-    // if not logged in, go back to auth
-    location.href = 'auth.html';
+/* CONFIG */
+const USERS_KEY = 'ritters_users';
+const CURRENT_USER_KEY = 'ritters_currentUser';
+const WEATHER_API_KEY = 'bc35dc734bb6fb3c973c5c4de9d0c0e2'; // your key
+
+/* Basic helpers */
+const $ = id => document.getElementById(id);
+function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
+function loadUsers(){ return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); }
+function ukey(key){ return `${currentUser}::${key}`; } // per-user storage key
+
+/* AUTH MODAL (embedded) */
+const authModal = $('authModal');
+const authUser = $('authUser'), authPass = $('authPass'), authBio = $('authBio'), authPic = $('authPic');
+const authPreview = $('authPreview'), authMessage = $('authMessage');
+authPic.addEventListener('change', e => {
+  const f = e.target.files[0]; if(!f) return authPreview.src='';
+  const r = new FileReader(); r.onload = ()=> authPreview.src = r.result; r.readAsDataURL(f);
+});
+
+/* show / hide auth */
+function showAuth(msg){
+  authMessage.textContent = msg||'';
+  authModal.style.display='flex';
+}
+function hideAuth(){ authModal.style.display='none'; authMessage.textContent=''; }
+
+/* create demo user */
+function ensureDemo(){
+  const users = loadUsers();
+  if(!users.demo){
+    users.demo = { password:'demo', bio:'Demo account', pic:'', joined:new Date().toISOString() };
+    saveUsers(users);
   }
+}
 
-  // load user info
-  const users = JSON.parse(localStorage.getItem(usersKey) || '{}');
-  const me = users[currentUser] || { password:'', bio:'', pic:'', joined: new Date().toISOString() };
+/* signup/login handlers */
+$('signupBtn').addEventListener('click', ()=> {
+  const name = authUser.value.trim(); const pass = authPass.value;
+  if(!name || !pass){ authMessage.textContent='Username and password required.'; return; }
+  const users = loadUsers();
+  if(users[name]){ authMessage.textContent='Username taken.'; return; }
+  users[name] = { password: pass, bio: authBio.value||'', pic: authPreview.src||'', joined:new Date().toISOString() };
+  saveUsers(users);
+  localStorage.setItem(CURRENT_USER_KEY, name);
+  initForCurrentUser();
+  hideAuth();
+});
+$('loginBtn').addEventListener('click', ()=> {
+  const name = authUser.value.trim(); const pass = authPass.value;
+  if(!name || !pass){ authMessage.textContent='Username and password required.'; return; }
+  const users = loadUsers();
+  if(!users[name] || users[name].password !== pass){ authMessage.textContent='Invalid credentials.'; return; }
+  localStorage.setItem(CURRENT_USER_KEY, name);
+  initForCurrentUser();
+  hideAuth();
+});
+$('demoBtn').addEventListener('click', ()=> {
+  ensureDemo();
+  localStorage.setItem(CURRENT_USER_KEY, 'demo');
+  initForCurrentUser();
+  hideAuth();
+});
+$('closeAuth').addEventListener('click', ()=> { /* close only if logged in */ if(!localStorage.getItem(CURRENT_USER_KEY)) return; hideAuth(); });
 
-  // DOM refs
-  const nav = document.getElementById('nav');
-  const panels = document.querySelectorAll('main section');
-  const welcomeText = document.getElementById('welcomeText');
-  const asidePic = document.getElementById('asidePic');
-  const asideName = document.getElementById('asideName');
-  const asideBio = document.getElementById('asideBio');
-  const profilePic = document.getElementById('profilePic');
-  const profileName = document.getElementById('profileName');
-  const profileJoined = document.getElementById('profileJoined');
+/* if a user is already logged in, skip modal; otherwise show modal */
+let currentUser = localStorage.getItem(CURRENT_USER_KEY) || null;
 
-  // populate profile area
-  function renderProfileArea(){
-    asideName.textContent = currentUser;
-    asideBio.textContent = me.bio || '';
-    asidePic.src = me.pic || '';
-    profilePic.src = me.pic || '';
-    profileName.textContent = currentUser;
-    profileJoined.textContent = 'Joined: ' + (new Date(me.joined)).toLocaleDateString();
-    document.getElementById('currentUserLabel').textContent = currentUser;
-    welcomeText.textContent = `Welcome, ${currentUser}`;
-    document.getElementById('editBio').value = me.bio || '';
+/* UI: navigation */
+const nav = document.querySelectorAll('nav button');
+const sections = document.querySelectorAll('main section');
+function setActiveTab(tab){
+  nav.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  sections.forEach(s => s.id === `tab-${tab}` ? s.classList.add('active') : s.classList.remove('active'));
+}
+nav.forEach(b => b.addEventListener('click', ()=> setActiveTab(b.dataset.tab)));
+function navTo(tab){ setActiveTab(tab); window.scrollTo({top:0,behavior:'smooth'}); }
+
+/* LOGOUT */
+function logout(){
+  localStorage.removeItem(CURRENT_USER_KEY);
+  currentUser = null;
+  showAuth('Signed out. Please log in.');
+  renderSignedOutView();
+}
+$('logoutBtn').addEventListener('click', logout);
+$('logoutBtnAside')?.addEventListener('click', logout);
+
+/* THEME toggle - simple swap */
+$('themeToggle').addEventListener('click', ()=>{
+  if(document.documentElement.style.getPropertyValue('--bg') === '#fff'){
+    document.documentElement.style.setProperty('--bg','#0b0b0f'); document.documentElement.style.setProperty('--text','#eaf0ff');
+  } else {
+    document.documentElement.style.setProperty('--bg','#fff'); document.documentElement.style.setProperty('--text','#111');
   }
-  renderProfileArea();
+});
 
-  /* ------------- NAV ------------- */
-  function openPanel(name){
-    panels.forEach(p => p.style.display = 'none');
-    const el = document.getElementById('panel-' + name);
-    if(el) el.style.display = 'block';
-    // mark active button
-    nav.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.panel === name));
-  }
-  nav.addEventListener('click', (e) => {
-    if(e.target.dataset && e.target.dataset.panel){
-      openPanel(e.target.dataset.panel);
-    }
-  });
-  // initial open
-  openPanel('dashboard');
+/* initial profile & UI render */
+function renderSignedOutView(){
+  $('welcomeText').textContent = 'Please sign in';
+  $('logoutBtn').style.display = 'none';
+  $('currentUserLabel').textContent = '';
+  $('asideName').textContent = '';
+  $('asideBio').textContent = '';
+  $('asidePic').src = '';
+  // hide sensitive panels? Keep UI but require login for actions.
+}
+function renderSignedInView(userObj){
+  $('welcomeText').textContent = `Welcome, ${currentUser}`;
+  $('logoutBtn').style.display = 'inline-block';
+  $('currentUserLabel').textContent = currentUser;
+  $('asideName').textContent = currentUser;
+  $('asideBio').textContent = userObj.bio || '';
+  $('asidePic').src = userObj.pic || '';
+  $('profilePic').src = userObj.pic || '';
+  $('profileName').textContent = currentUser;
+  $('profileJoined').textContent = 'Joined: ' + new Date(userObj.joined).toLocaleDateString();
+}
 
-  /* ------------- LOGOUT ------------- */
-  function logout(){
-    localStorage.removeItem(currentUserKey);
-    location.href = 'auth.html';
-  }
-  document.getElementById('logoutBtn').addEventListener('click', logout);
-  document.getElementById('logoutBtn2').addEventListener('click', logout);
-  document.getElementById('openProfileBtn').addEventListener('click', ()=> openPanel('profile'));
+/* per-user data helpers */
+function userDataGet(key, fallback){ return JSON.parse(localStorage.getItem(ukey(key)) || JSON.stringify(fallback)); }
+function userDataSet(key, value){ localStorage.setItem(ukey(key), JSON.stringify(value)); }
 
-  /* ------------- STATS ------------- */
-  function computeStats(){
-    const journal = JSON.parse(localStorage.getItem(ukey('journal') ) || '[]');
-    const notes = JSON.parse(localStorage.getItem(ukey('notes') ) || '[]');
-    const moods = JSON.parse(localStorage.getItem(ukey('moods') ) || '[]');
-    const events = JSON.parse(localStorage.getItem(ukey('events') ) || '{}');
-    return { journal: journal.length, notes: notes.length, moods: moods.length, events: Object.keys(events).length };
-  }
-  function renderStats(){
-    const s = computeStats();
-    const statArea = document.getElementById('statsArea');
-    statArea.innerHTML = `
-      <div class="stat"><div class="small">Journal entries</div><div>${s.journal}</div></div>
-      <div class="stat"><div class="small">Notes</div><div>${s.notes}</div></div>
-      <div class="stat"><div class="small">Moods tracked</div><div>${s.moods}</div></div>
-      <div class="stat"><div class="small">Calendar events</div><div>${s.events}</div></div>
-    `;
-    const profileStats = document.getElementById('profileStats');
-    profileStats.innerHTML = statArea.innerHTML;
-  }
-  renderStats();
+/* load user or show auth */
+function initForCurrentUser(){
+  currentUser = localStorage.getItem(CURRENT_USER_KEY);
+  if(!currentUser){ showAuth(); return; }
+  const users = loadUsers();
+  const me = users[currentUser] || { bio:'', pic:'', joined: new Date().toISOString() };
+  renderSignedInView(me);
+  renderAllUserData();
+  hideAuth();
+}
 
-  /* ------------- PROFILE EDIT ------------- */
-  document.getElementById('editPic').addEventListener('change', (ev) => {
-    const f = ev.target.files[0];
-    if(!f) return;
-    const r = new FileReader();
-    r.onload = () => {
-      profilePic.src = r.result;
-      asidePic.src = r.result;
-      me.pic = r.result;
-      users[currentUser] = me;
-      localStorage.setItem(usersKey, JSON.stringify(users));
-    }
-    r.readAsDataURL(f);
-  });
-  document.getElementById('saveProfileBtn').addEventListener('click', ()=>{
-    me.bio = document.getElementById('editBio').value;
-    users[currentUser] = me;
-    localStorage.setItem(usersKey, JSON.stringify(users));
-    renderProfileArea();
-  });
-
-  /* ------------- JOURNAL ------------- */
-  function loadJournal(){ return JSON.parse(localStorage.getItem(ukey('journal')) || '[]'); }
-  function saveJournalArray(arr){ localStorage.setItem(ukey('journal'), JSON.stringify(arr)); }
-  document.getElementById('saveJournalBtn').addEventListener('click', ()=>{
-    const title = document.getElementById('journalTitle').value.trim();
-    const body = document.getElementById('journalBody').value.trim();
-    if(!title && !body) return alert('Write something.');
-    const arr = loadJournal();
-    arr.unshift({ id: Date.now(), title, body, created: new Date().toISOString() });
-    saveJournalArray(arr);
-    renderJournalList();
-    document.getElementById('journalTitle').value = ''; document.getElementById('journalBody').value = '';
-    renderStats();
-  });
-  document.getElementById('clearJournalBtn').addEventListener('click', ()=>{ if(confirm('Clear all journal entries?')){ saveJournalArray([]); renderJournalList(); renderStats(); } });
-  function renderJournalList(){
-    const list = loadJournal();
-    const container = document.getElementById('journalList');
-    container.innerHTML = list.map(item => `
-      <div class="card">
-        <div style="display:flex;justify-content:space-between"><strong>${item.title||'(no title)'}</strong><small class="small">${new Date(item.created).toLocaleString()}</small></div>
-        <div style="margin-top:8px">${(item.body||'').replace(/\n/g,'<br>')}</div>
-        <div style="margin-top:8px"><button class="btn alt" onclick="deleteJournal(${item.id})">Delete</button></div>
+/* ==========================
+   Journal (per-user)
+   ========================== */
+function renderJournalList(){
+  const list = userDataGet('journal', []);
+  $('journalList').innerHTML = list.map(item => `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between">
+        <strong>${item.title || '(no title)'}</strong>
+        <small class="small">${new Date(item.created).toLocaleString()}</small>
       </div>
-    `).join('');
-  }
-  window.deleteJournal = function(id){
-    let arr = loadJournal();
-    arr = arr.filter(i => i.id !== id);
-    saveJournalArray(arr);
-    renderJournalList(); renderStats();
-  }
-  renderJournalList();
+      <div style="margin-top:8px">${(item.body||'').replace(/\n/g,'<br>')}</div>
+      <div style="margin-top:8px"><button class="btn alt" onclick="deleteJournal(${item.id})">Delete</button></div>
+    </div>
+  `).join('');
+}
+window.deleteJournal = function(id){
+  let arr = userDataGet('journal', []);
+  arr = arr.filter(i=> i.id !== id);
+  userDataSet('journal', arr); renderJournalList(); renderStats();
+}
+$('saveJournalBtn').addEventListener('click', ()=>{
+  const title = $('journalTitle').value.trim(), body = $('journalBody').value.trim();
+  if(!title && !body) return alert('Write something first.');
+  const arr = userDataGet('journal', []);
+  arr.unshift({ id: Date.now(), title, body, created: new Date().toISOString() });
+  userDataSet('journal', arr);
+  $('journalTitle').value=''; $('journalBody').value='';
+  renderJournalList(); renderStats();
+});
+$('clearJournalBtn').addEventListener('click', ()=>{ if(confirm('Clear all entries?')){ userDataSet('journal', []); renderJournalList(); renderStats(); } });
 
-  /* ------------- NOTES ------------- */
-  function loadNotes(){ return JSON.parse(localStorage.getItem(ukey('notes')) || '[]'); }
-  function saveNotesArray(a){ localStorage.setItem(ukey('notes'), JSON.stringify(a)); }
-  document.getElementById('saveNoteBtn').addEventListener('click', ()=>{
-    const t = document.getElementById('noteTitle').value.trim();
-    const b = document.getElementById('noteBody').value.trim();
-    if(!t && !b) return alert('Write a note.');
-    const arr = loadNotes();
-    arr.unshift({ id: Date.now(), t, b, created: new Date().toISOString() });
-    saveNotesArray(arr);
-    document.getElementById('noteTitle').value=''; document.getElementById('noteBody').value='';
-    renderNotesList(); renderStats();
-  });
-  document.getElementById('clearNotesBtn').addEventListener('click', ()=>{ if(confirm('Clear all notes?')){ saveNotesArray([]); renderNotesList(); renderStats(); }});
-  function renderNotesList(){
-    const arr = loadNotes();
-    document.getElementById('notesList').innerHTML = arr.map(n => `
-      <div class="card">
-        <div style="display:flex;justify-content:space-between"><strong>${n.t||'(no title)'}</strong><small class="small">${new Date(n.created).toLocaleString()}</small></div>
-        <div style="margin-top:8px">${(n.b||'').replace(/\n/g,'<br>')}</div>
-        <div style="margin-top:8px"><button class="btn alt" onclick="deleteNote(${n.id})">Delete</button></div>
-      </div>
-    `).join('');
-  }
-  window.deleteNote = function(id){
-    let arr = loadNotes();
-    arr = arr.filter(n => n.id !== id);
-    saveNotesArray(arr);
-    renderNotesList(); renderStats();
-  }
-  renderNotesList();
+/* ==========================
+   Notes
+   ========================== */
+function renderNotesList(){
+  const arr = userDataGet('notes', []);
+  $('notesList').innerHTML = arr.map(n=>`
+    <div class="card">
+      <div style="display:flex;justify-content:space-between"><strong>${n.t||'(no title)'}</strong><small class="small">${new Date(n.created).toLocaleString()}</small></div>
+      <div style="margin-top:8px">${(n.b||'').replace(/\n/g,'<br>')}</div>
+      <div style="margin-top:8px"><button class="btn alt" onclick="deleteNote(${n.id})">Delete</button></div>
+    </div>
+  `).join('');
+}
+window.deleteNote = function(id){
+  let arr = userDataGet('notes', []);
+  arr = arr.filter(n=> n.id !== id);
+  userDataSet('notes', arr); renderNotesList(); renderStats();
+}
+$('saveNoteBtn').addEventListener('click', ()=>{
+  const t = $('noteTitle').value.trim(), b = $('noteBody').value.trim();
+  if(!t && !b) return alert('Write a note.');
+  const arr = userDataGet('notes', []);
+  arr.unshift({ id: Date.now(), t, b, created: new Date().toISOString() });
+  userDataSet('notes', arr);
+  $('noteTitle').value=''; $('noteBody').value='';
+  renderNotesList(); renderStats();
+});
+$('clearNotesBtn').addEventListener('click', ()=>{ if(confirm('Clear all notes?')){ userDataSet('notes', []); renderNotesList(); renderStats(); } });
 
-  /* ------------- CALENDAR ------------- */
-  function loadEvents(){ return JSON.parse(localStorage.getItem(ukey('events')) || '{}'); }
-  function saveEvents(e){ localStorage.setItem(ukey('events'), JSON.stringify(e)); }
-  document.getElementById('saveEventBtn').addEventListener('click', ()=>{
-    const date = document.getElementById('eventDate').value;
-    const title = document.getElementById('eventTitle').value.trim();
-    if(!date || !title) return alert('Select date and title.');
-    const events = loadEvents();
-    if(!events[date]) events[date] = [];
-    events[date].push({ id: Date.now(), title });
-    saveEvents(events);
-    renderEvents(); renderStats();
-  });
-  function renderEvents(){
-    const events = loadEvents();
-    const container = document.getElementById('calendarEventsList');
-    container.innerHTML = Object.keys(events).sort().map(d => `
-      <div class="card"><div style="display:flex;justify-content:space-between"><strong>${d}</strong><small class="small">${events[d].length} event(s)</small></div>
-      <div style="margin-top:8px">${events[d].map(ev => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,0.01)">${ev.title}<button class="btn alt" onclick="deleteEvent('${d}',${ev.id})">Delete</button></div>`).join('')}</div></div>
-    `).join('');
-  }
-  window.deleteEvent = function(date,id){
-    const events = loadEvents();
-    events[date] = events[date].filter(e=>e.id !== id);
-    if(events[date].length === 0) delete events[date];
-    saveEvents(events);
-    renderEvents(); renderStats();
-  }
-  renderEvents();
-
-  /* ------------- STOPWATCH ----------
+/* ==========================
+   Calendar (events)
+   ========================== */
+function renderEvents(){
+  const events = userDataGet('events', {});
+  const keys = Object.keys(events).sort();
+  $('calendarEventsList').innerHTML = keys.map(d => `
+    <div class="card"><div style="display:flex;justify-content:space-between"><strong>${d}</strong><small class="small">${events[d].length} event(s)</small></div>
+    <div style="margin-top:8px">${events[d].map(ev => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,0.01)">${ev.title}<button class="btn alt" onclick="deleteEvent('${d}',${ev.id})">Delete</button></div>`).join('')}</div></div>
+  `).join('');
+}
+$('saveEventBtn').addEventListener('click', ()=>{
+  const date = $('eventDate').value, title = $('eventTitle').value.trim();
+  if(!date || !title) return alert('Pick a date and title.');
+  c
