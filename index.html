@@ -552,7 +552,7 @@ async function displayWeatherFromData(data){
 async function fetchWeatherByCity(city){
   if(!city) return alert('Enter a city, like "London, GB"');
   if(!WEATHER_API_KEY){ weatherResult.innerHTML = '<div style="color:orange">Weather API key not set.</div>'; return; }
-  try{ const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${WEATHER_API_KEY}&units=metric`); const data = await res.json(); if(data.cod && data.cod !== 200){ weatherResult.innerHTML = '<div style="color:orange">City not found — try "City, CountryCode".</div>'; return; } displayWeatherFromData(data); userSet('lastWeather', city); } catch(e){ weatherResult.innerHTML = '<div style="color:red">Network error</div>'; }
+  try{ const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid${bc35dc734bb6fb3c973c5c4de9d0c0e2}&units=metric`); const data = await res.json(); if(data.cod && data.cod !== 200){ weatherResult.innerHTML = '<div style="color:orange">City not found — try "City, CountryCode".</div>'; return; } displayWeatherFromData(data); userSet('lastWeather', city); } catch(e){ weatherResult.innerHTML = '<div style="color:red">Network error</div>'; }
 }
 async function fetchWeatherByCoords(lat, lon){
   if(!WEATHER_API_KEY){ weatherResult.innerHTML = '<div style="color:orange">Weather API key not set.</div>'; return; }
