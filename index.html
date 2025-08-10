@@ -9,33 +9,36 @@
     --bg:#071018; --panel:rgba(255,255,255,0.03); --accent:#7b5cff; --muted:#9fb0c8; --text:#e9f2ff;
   }
   *{box-sizing:border-box}
-  body{margin:0; font-family:Inter,Segoe UI,Roboto,Arial;background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column}
+  body{margin:0; font-family:Inter,Segoe UI,Roboto,Arial,system-ui;background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column}
   header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(4px)}
   h1{margin:0;font-size:1.05rem}
   .top-actions{display:flex;gap:8px}
-  .btn{background:var(--accent);border:none;padding:8px 12px;border-radius:10px;color:#fff;cursor:pointer;font-weight:600}
+  .btn{background:var(--accent);border:none;padding:8px 12px;border-radius:10px;color:#fff;cursor:pointer;font-weight:600;box-shadow:0 6px 18px rgba(123,92,255,0.12)}
   .btn.alt{background:#24303a}
   .layout{display:grid;grid-template-columns:260px 1fr 320px;gap:16px;padding:18px;flex:1}
   nav{background:var(--panel);padding:14px;border-radius:12px;height:calc(100vh - 120px);overflow:auto}
-  nav button{display:block;width:100%;text-align:left;padding:12px;border-radius:8px;border:none;background:transparent;color:var(--text);cursor:pointer;margin-bottom:8px}
-  nav button.active{background:rgba(123,92,255,0.12)}
-  main{background:var(--panel);padding:14px;border-radius:12px;min-height:400px;overflow:auto}
+  nav button{display:block;width:100%;text-align:left;padding:12px;border-radius:8px;border:none;background:transparent;color:var(--text);cursor:pointer;margin-bottom:8px;font-weight:600}
+  nav button.active{background:linear-gradient(90deg, rgba(123,92,255,0.14), rgba(123,92,255,0.06));}
+  main{background:var(--panel);padding:14px;border-radius:12px;min-height:400px;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,0.35)}
   aside{background:var(--panel);padding:14px;border-radius:12px;height:calc(100vh - 120px);overflow:auto}
   section{display:none}
   section.active{display:block}
-  .card{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;margin-bottom:12px}
-  input,textarea,select{width:100%;padding:8px;border-radius:8px;border:none;background:rgba(255,255,255,0.02);color:var(--text);margin-top:8px}
+  .card{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;margin-bottom:12px;box-shadow:0 4px 14px rgba(0,0,0,0.2)}
+  input,textarea,select{width:100%;padding:10px;border-radius:8px;border:none;background:rgba(255,255,255,0.02);color:var(--text);margin-top:8px;font-size:0.95rem}
+  input[type="file"]{padding:6px}
+  textarea{min-height:90px}
   .profile-pic{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.04)}
   .small{font-size:0.9rem;color:var(--muted)}
   .laps{max-height:160px;overflow:auto;padding:6px;background:rgba(255,255,255,0.02);border-radius:8px;margin-top:8px}
   footer{padding:12px;text-align:center;color:var(--muted);font-size:0.85rem}
   /* fullscreen auth modal */
   .modal-backdrop{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,10,0.6), rgba(2,6,10,0.6));z-index:9999}
-  .auth-card{width:100%;max-width:520px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:22px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
+  .auth-card{width:100%;max-width:620px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:22px;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,0.7)}
   .auth-top{display:flex;gap:12px;align-items:center}
   .auth-title{font-size:1.2rem;margin:0}
   .row{display:flex;gap:8px}
-  @media(max-width:1000px){.layout{grid-template-columns:1fr;grid-auto-rows:min-content}aside{order:3}}
+  .muted-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:6px 10px;border-radius:8px;color:var(--muted)}
+  @media(max-width:1000px){.layout{grid-template-columns:1fr;grid-auto-rows:min-content}aside{order:3;padding-bottom:60px} nav{height:auto}}
 </style>
 </head>
 <body>
@@ -277,7 +280,7 @@
 /* CONFIG */
 const USERS_KEY = 'ritters_users';
 const CURRENT_USER_KEY = 'ritters_currentUser';
-const WEATHER_API_KEY = ''; // <-- PASTE your OpenWeatherMap key here (or leave blank)
+const WEATHER_API_KEY = 'bc35dc734bb6fb3c973c5c4de9d0c0e2'; // <-- your key inserted
 
 /* UTIL */
 const $ = id => document.getElementById(id);
@@ -394,8 +397,6 @@ function renderSignedOutUI(){
   $('asideName').textContent = '';
   $('asideBio').textContent = '';
   $('asidePic').src = '';
-  // clear main panels
-  // but keep nav visible; actions will require login.
 }
 
 /* Signed in UI */
@@ -436,10 +437,10 @@ function renderJournalList(){
   $('journalList').innerHTML = list.map(item => `
     <div class="card">
       <div style="display:flex;justify-content:space-between">
-        <strong>${item.title || '(no title)'}</strong>
+        <strong>${escapeHtml(item.title) || '(no title)'}</strong>
         <small class="small">${new Date(item.created).toLocaleString()}</small>
       </div>
-      <div style="margin-top:8px">${(item.body||'').replace(/\n/g,'<br>')}</div>
+      <div style="margin-top:8px">${escapeHtml(item.body||'').replace(/\n/g,'<br>')}</div>
       <div style="margin-top:8px"><button class="btn alt" onclick="deleteJournal(${item.id})">Delete</button></div>
     </div>
   `).join('');
@@ -466,8 +467,8 @@ function renderNotesList(){
   const arr = userGet('notes', []);
   $('notesList').innerHTML = arr.map(n => `
     <div class="card">
-      <div style="display:flex;justify-content:space-between"><strong>${n.t||'(no title)'}</strong><small class="small">${new Date(n.created).toLocaleString()}</small></div>
-      <div style="margin-top:8px">${(n.b||'').replace(/\n/g,'<br>')}</div>
+      <div style="display:flex;justify-content:space-between"><strong>${escapeHtml(n.t)||'(no title)'}</strong><small class="small">${new Date(n.created).toLocaleString()}</small></div>
+      <div style="margin-top:8px">${escapeHtml(n.b||'').replace(/\n/g,'<br>')}</div>
       <div style="margin-top:8px"><button class="btn alt" onclick="deleteNote(${n.id})">Delete</button></div>
     </div>
   `).join('');
@@ -495,7 +496,7 @@ function renderEvents(){
   const keys = Object.keys(events).sort();
   $('calendarEventsList').innerHTML = keys.map(d => `
     <div class="card"><div style="display:flex;justify-content:space-between"><strong>${d}</strong><small class="small">${events[d].length} event(s)</small></div>
-    <div style="margin-top:8px">${events[d].map(ev => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,0.01)">${ev.title}<button class="btn alt" onclick="deleteEvent('${d}',${ev.id})">Delete</button></div>`).join('')}</div></div>
+    <div style="margin-top:8px">${events[d].map(ev => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,0.01)">${escapeHtml(ev.title)}<button class="btn alt" onclick="deleteEvent('${d}',${ev.id})">Delete</button></div>`).join('')}</div></div>
   `).join('');
 }
 $('saveEventBtn').addEventListener('click', ()=>{
@@ -534,7 +535,7 @@ $('playFileBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('
 
 /* ---------- MOOD ---------- */
 $('saveMoodBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const mood = $('moodSelect').value, note = $('moodNote').value.trim(); const arr = userGet('moods', []); arr.unshift({ id: Date.now(), mood, note, t: new Date().toISOString() }); userSet('moods', arr); $('moodNote').value=''; renderMoodHistory(); renderStats(); });
-function renderMoodHistory(){ const arr = userGet('moods', []); $('moodHistory').innerHTML = arr.map(m => `<div class="card"><div style="display:flex;justify-content:space-between"><div>${m.mood} ${m.note?m.note:''}</div><small class="small">${new Date(m.t).toLocaleString()}</small></div></div>`).join(''); }
+function renderMoodHistory(){ const arr = userGet('moods', []); $('moodHistory').innerHTML = arr.map(m => `<div class="card"><div style="display:flex;justify-content:space-between"><div>${escapeHtml(m.mood)} ${escapeHtml(m.note||'')}</div><small class="small">${new Date(m.t).toLocaleString()}</small></div></div>`).join(''); }
 renderMoodHistory();
 
 /* ---------- WEATHER ---------- */
@@ -543,7 +544,7 @@ async function displayWeatherFromData(data){
   asideWeather.textContent = `${Math.round(data.main.temp)}°C • ${data.weather[0].main}`;
   weatherResult.innerHTML = `
     <div style="display:flex;align-items:center;gap:12px">
-      <div><strong>${data.name}, ${data.sys.country}</strong><div class="small">${data.weather[0].description}</div></div>
+      <div><strong>${escapeHtml(data.name)}, ${escapeHtml(data.sys.country)}</strong><div class="small">${escapeHtml(data.weather[0].description)}</div></div>
       <div style="font-size:1.6rem">${Math.round(data.main.temp)}°C</div>
     </div>
     <div style="margin-top:8px" class="small">Humidity ${data.main.humidity}% • Wind ${data.wind.speed} m/s</div>
@@ -552,16 +553,30 @@ async function displayWeatherFromData(data){
 async function fetchWeatherByCity(city){
   if(!city) return alert('Enter a city, like "London, GB"');
   if(!WEATHER_API_KEY){ weatherResult.innerHTML = '<div style="color:orange">Weather API key not set.</div>'; return; }
-  try{ const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid${bc35dc734bb6fb3c973c5c4de9d0c0e2}&units=metric`); const data = await res.json(); if(data.cod && data.cod !== 200){ weatherResult.innerHTML = '<div style="color:orange">City not found — try "City, CountryCode".</div>'; return; } displayWeatherFromData(data); userSet('lastWeather', city); } catch(e){ weatherResult.innerHTML = '<div style="color:red">Network error</div>'; }
+  try{
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${WEATHER_API_KEY}&units=metric`);
+    const data = await res.json();
+    if(data.cod && data.cod !== 200){ weatherResult.innerHTML = '<div style="color:orange">City not found — try "City, CountryCode".</div>'; return; }
+    displayWeatherFromData(data); userSet('lastWeather', city);
+  } catch(e){
+    weatherResult.innerHTML = '<div style="color:red">Network error</div>';
+  }
 }
 async function fetchWeatherByCoords(lat, lon){
   if(!WEATHER_API_KEY){ weatherResult.innerHTML = '<div style="color:orange">Weather API key not set.</div>'; return; }
-  try{ const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`); const data = await res.json(); if(data.cod && data.cod !== 200){ weatherResult.innerHTML = '<div style="color:orange">Location data not found.</div>'; return; } displayWeatherFromData(data); userSet('lastWeather', data.name); } catch(e){ weatherResult.innerHTML = '<div style="color:red">Network error</div>'; }
+  try{
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`);
+    const data = await res.json();
+    if(data.cod && data.cod !== 200){ weatherResult.innerHTML = '<div style="color:orange">Location data not found.</div>'; return; }
+    displayWeatherFromData(data); userSet('lastWeather', data.name);
+  } catch(e){
+    weatherResult.innerHTML = '<div style="color:red">Network error</div>';
+  }
 }
 $('weatherSearchBtn').addEventListener('click', ()=> fetchWeatherByCity($('weatherCity').value.trim()));
 $('weatherDetectBtn').addEventListener('click', ()=> { if(!navigator.geolocation) return alert('Geolocation not supported'); navigator.geolocation.getCurrentPosition(p=> fetchWeatherByCoords(p.coords.latitude, p.coords.longitude), ()=> alert('Location denied or unavailable')); });
 (function tryInitWeather(){
-  // if user had last weather, attempt to show
+  // if user had last weather, attempt to show (only after login)
   if(!currentUser) return;
   const last = userGet('lastWeather', null);
   if(last){ $('weatherCity').value = last; fetchWeatherByCity(last); }
@@ -642,6 +657,16 @@ $('logoutBtnAside')?.addEventListener('click', logout);
   localStorage.setItem = function(k,v){ orig.apply(this, arguments); try{ renderStats(); }catch(e){} };
 })();
 
+/* small helper to escape HTML when injecting user content */
+function escapeHtml(str){
+  if(!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 </script>
 </body>
 </html>
