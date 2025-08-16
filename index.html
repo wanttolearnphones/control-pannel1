@@ -39,6 +39,10 @@
   .row{display:flex;gap:8px}
   .muted-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:6px 10px;border-radius:8px;color:var(--muted)}
   @media(max-width:1000px){.layout{grid-template-columns:1fr;grid-auto-rows:min-content}aside{order:3;padding-bottom:60px} nav{height:auto}}
+  /* small extras for search & messages */
+  .search-results{margin-top:12px}
+  .msg-list{max-height:220px;overflow:auto;padding:8px;background:rgba(255,255,255,0.02);border-radius:8px}
+  .msg{margin-bottom:8px;padding:6px;border-radius:6px;background:rgba(0,0,0,0.04)}
 </style>
 </head>
 <body>
@@ -64,6 +68,8 @@
     <button data-tab="music">Music</button>
     <button data-tab="mood">Mood Tracker</button>
     <button data-tab="weather">Weather</button>
+    <button data-tab="search">Search</button>
+    <button data-tab="messages">Messages</button>
     <button data-tab="profile">Profile</button>
   </nav>
 
@@ -78,6 +84,8 @@
             <button class="btn" onclick="navTo('stopwatch')">Open Stopwatch</button>
             <button class="btn" onclick="navTo('music')">Open Music</button>
             <button class="btn" onclick="navTo('weather')">Open Weather</button>
+            <button class="btn" onclick="navTo('search')">Open Search</button>
+            <button class="btn" onclick="navTo('messages')">Open Messages</button>
           </div>
         </div>
         <div style="width:320px" class="card">
@@ -178,6 +186,38 @@
       <div style="margin-top:12px" id="weatherResult"></div>
     </section>
 
+    <!-- Search -->
+    <section id="tab-search">
+      <h2>Search</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="searchQuery" placeholder="Search the web or ask a quick question..." onkeydown="if(event.key==='Enter') performSearch()">
+        <button class="btn" id="doSearchBtn">Search</button>
+        <button class="btn alt" id="openSearchInNewTab">Open in Google</button>
+      </div>
+      <div class="card">
+        <div class="small">Quick Answer</div>
+        <div id="searchQuick" class="search-results small">No query yet.</div>
+      </div>
+      <div class="card">
+        <div class="small">Results</div>
+        <div id="searchResults" class="search-results"></div>
+      </div>
+    </section>
+
+    <!-- Messages (simple public room) -->
+    <section id="tab-messages">
+      <h2>Messages (Public Room)</h2>
+      <div class="card">
+        <div class="small">Messages</div>
+        <div id="msgList" class="msg-list"></div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input id="msgText" placeholder="Write a message..." onkeydown="if(event.key==='Enter') sendMessage()">
+          <button class="btn" id="sendMsgBtn">Send</button>
+        </div>
+        <div class="small" style="margin-top:8px">Note: this is a local shared room stored in your browser (localStorage). To chat across the internet you'll need a small server (I can add that next).</div>
+      </div>
+    </section>
+
     <!-- Profile -->
     <section id="tab-profile">
       <h2>Profile</h2>
@@ -275,19 +315,20 @@
 <script>
 /* ---------------------------
    Ritters Full Single File App
+   Combined + Search + Messaging
    --------------------------- */
 
 /* CONFIG */
 const USERS_KEY = 'ritters_users';
 const CURRENT_USER_KEY = 'ritters_currentUser';
-const WEATHER_API_KEY = 'bc35dc734bb6fb3c973c5c4de9d0c0e2'; // <-- your key inserted
+const WEATHER_API_KEY = 'bc35dc734bb6fb3c973c5c4de9d0c0e2'; // <- keep or replace with your own
 
 /* UTIL */
 const $ = id => document.getElementById(id);
 function loadUsers(){ return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); }
 function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
 function ukey(k){ return `${currentUser}::${k}`; }
-function userGet(k, fallback){ return JSON.parse(localStorage.getItem(ukey(k)) || JSON.stringify(fallback)); }
+function userGet(k, fallback){ try { return JSON.parse(localStorage.getItem(ukey(k)) || JSON.stringify(fallback)); } catch(e){ return fallback; } }
 function userSet(k, value){ localStorage.setItem(ukey(k), JSON.stringify(value)); }
 
 /* HASH password using SubtleCrypto SHA-256 -> hex */
@@ -302,6 +343,7 @@ async function hashPassword(pw){
 const authModal = $('authModal');
 const authUser = $('authUser'), authPass = $('authPass'), authBio = $('authBio'), authPic = $('authPic');
 const authPreview = $('authPreview'), authMessage = $('authMessage');
+$('previewClear').addEventListener('click', ()=> { authPreview.src = ''; authPic.value = ''; });
 
 /* preview pic */
 authPic.addEventListener('change', (e)=>{
@@ -311,7 +353,6 @@ authPic.addEventListener('change', (e)=>{
   r.onload = () => authPreview.src = r.result;
   r.readAsDataURL(f);
 });
-$('previewClear').addEventListener('click', ()=> { authPreview.src = ''; authPic.value = ''; });
 
 /* show/hide auth */
 function showAuth(msg=''){ authMessage.textContent = msg; authModal.style.display = 'flex'; }
@@ -397,6 +438,10 @@ function renderSignedOutUI(){
   $('asideName').textContent = '';
   $('asideBio').textContent = '';
   $('asidePic').src = '';
+  $('profilePic').src = '';
+  $('profileName').textContent = '';
+  $('profileJoined').textContent = '';
+  $('profileStats').innerHTML = '';
 }
 
 /* Signed in UI */
@@ -410,11 +455,6 @@ function renderSignedInUI(userObj){
   $('profilePic').src = userObj.pic || '';
   $('profileName').textContent = currentUser;
   $('profileJoined').textContent = 'Joined: ' + new Date(userObj.joined).toLocaleDateString();
-}
-
-/* Per-user rendering of all data */
-function renderAllUserData(){
-  renderJournalList(); renderNotesList(); renderEvents(); renderLaps(); renderMoodHistory(); renderStats(); loadStopwatchState();
 }
 
 /* Initialize after login */
@@ -576,7 +616,6 @@ async function fetchWeatherByCoords(lat, lon){
 $('weatherSearchBtn').addEventListener('click', ()=> fetchWeatherByCity($('weatherCity').value.trim()));
 $('weatherDetectBtn').addEventListener('click', ()=> { if(!navigator.geolocation) return alert('Geolocation not supported'); navigator.geolocation.getCurrentPosition(p=> fetchWeatherByCoords(p.coords.latitude, p.coords.longitude), ()=> alert('Location denied or unavailable')); });
 (function tryInitWeather(){
-  // if user had last weather, attempt to show (only after login)
   if(!currentUser) return;
   const last = userGet('lastWeather', null);
   if(last){ $('weatherCity').value = last; fetchWeatherByCity(last); }
@@ -638,9 +677,92 @@ function renderStats(){
   $('profileStats').innerHTML = $('statsArea').innerHTML;
 }
 
+/* ---------- SEARCH ---------- */
+/*
+  Behavior:
+  - Attempts to fetch a DuckDuckGo Instant Answer for a quick result (CORS allowed).
+  - Shows links to perform the query on Google/Bing/DuckDuckGo in a new tab.
+*/
+$('doSearchBtn').addEventListener('click', performSearch);
+$('openSearchInNewTab').addEventListener('click', ()=> {
+  const q = $('searchQuery').value.trim();
+  if(!q) return alert('Enter a query');
+  window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank');
+});
+
+async function performSearch(){
+  const q = $('searchQuery').value.trim();
+  if(!q) return alert('Enter a query');
+  $('searchResults').innerHTML = `
+    <div><a href="https://www.google.com/search?q=${encodeURIComponent(q)}" target="_blank">Open Google results for "${escapeHtml(q)}"</a></div>
+    <div style="margin-top:6px"><a href="https://www.bing.com/search?q=${encodeURIComponent(q)}" target="_blank">Open Bing results</a></div>
+    <div style="margin-top:6px"><a href="https://duckduckgo.com/?q=${encodeURIComponent(q)}" target="_blank">Open DuckDuckGo results</a></div>
+  `;
+  $('searchQuick').textContent = 'Searching...';
+
+  // Try DuckDuckGo Instant Answer API for a quick summary (CORS-friendly)
+  // If it fails, we still keep the links above so the user can open a search.
+  try {
+    const endpoint = `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`;
+    const res = await fetch(endpoint);
+    if(!res.ok) throw new Error('no response');
+    const data = await res.json();
+    // Compose quick answer
+    let qa = '';
+    if(data.AbstractText && data.AbstractText.trim()){
+      qa += data.AbstractText;
+      if(data.AbstractURL) qa += ` — source: ${data.AbstractURL}`;
+    } else if(data.Heading && data.AbstractText){ qa += `${data.Heading} — ${data.AbstractText}`; }
+    else if(data.RelatedTopics && data.RelatedTopics.length){
+      // show first related topic(s)
+      const t = data.RelatedTopics[0];
+      if(t.Text) qa += t.Text;
+      if(t.FirstURL) qa += ` — ${t.FirstURL}`;
+    }
+    if(!qa){
+      qa = 'No quick answer found. Open the web search links above for full results.';
+    }
+    $('searchQuick').textContent = qa;
+  } catch (e) {
+    $('searchQuick').textContent = 'Quick answer failed (network or CORS). Use the links above to search in a new tab.';
+  }
+}
+
+/* ---------- MESSAGES (simple public room) ---------- */
+/*
+  messages stored in localStorage under key: 'ritters_public_chat'
+  Structure: [{id, user, text, t}]
+*/
+const CHAT_KEY = 'ritters_public_chat';
+function loadChat(){ try{ return JSON.parse(localStorage.getItem(CHAT_KEY) || '[]'); }catch(e){ return []; } }
+function saveChat(arr){ localStorage.setItem(CHAT_KEY, JSON.stringify(arr)); }
+function renderChat(){
+  const list = loadChat();
+  const el = $('msgList');
+  if(!el) return;
+  el.innerHTML = list.map(m => `<div class="msg"><div style="display:flex;justify-content:space-between"><strong>${escapeHtml(m.user)}</strong><small class="small">${new Date(m.t).toLocaleTimeString()}</small></div><div style="margin-top:6px">${escapeHtml(m.text)}</div></div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+function sendMessage(){
+  if(!currentUser) return alert('Log in first');
+  const t = $('msgText').value.trim();
+  if(!t) return;
+  const list = loadChat();
+  list.push({ id: Date.now(), user: currentUser, text: t, t: new Date().toISOString() });
+  saveChat(list);
+  $('msgText').value = '';
+  renderChat();
+}
+// simulate "real-time" by listening to storage events (other tabs) and polling as fallback
+window.addEventListener('storage', (ev)=>{
+  if(ev.key === CHAT_KEY) renderChat();
+});
+setInterval(renderChat, 2000);
+$('sendMsgBtn').addEventListener('click', sendMessage);
+
 /* ---------- LOAD / BOOT ---------- */
 function renderAllUserData(){
-  renderJournalList(); renderNotesList(); renderEvents(); renderLaps(); renderMoodHistory(); renderStats(); loadStopwatchState();
+  renderJournalList(); renderNotesList(); renderEvents(); renderLaps(); renderMoodHistory(); renderStats(); loadStopwatchState(); renderChat();
 }
 function loadStopwatchState(){
   const s = userGet('sw_state', null);
@@ -667,6 +789,12 @@ function escapeHtml(str){
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+
+/* ---------- initial call ---------- */
+renderMoodHistory();
+renderStats();
+renderChat();
+
 </script>
 </body>
 </html>
