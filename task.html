@@ -1,161 +1,672 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Task Manager - Ritters Control Panel</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #111;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
-    }
-
-    .task-panel {
-      background: #1e1e1e;
-      padding: 2rem;
-      border-radius: 12px;
-      max-width: 600px;
-      width: 100%;
-      box-shadow: 0 0 12px rgba(0,0,0,0.5);
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 1.5rem;
-      color: #00bcd4;
-    }
-
-    .task-input {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 1rem;
-    }
-
-    input[type="text"] {
-      flex: 1;
-      padding: 0.75rem;
-      border-radius: 8px;
-      border: 1px solid #333;
-      background: #222;
-      color: white;
-    }
-
-    button {
-      background: linear-gradient(to right, #00bcd4, #008cba);
-      color: white;
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: 10px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    li {
-      background: #2c2c2c;
-      margin-bottom: 10px;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    li.completed {
-      text-decoration: line-through;
-      opacity: 0.6;
-    }
-
-    .btn-delete {
-      background: #e53935;
-      border: none;
-      border-radius: 6px;
-      color: white;
-      padding: 5px 10px;
-      cursor: pointer;
-    }
-
-    .back-button {
-      margin-top: 2rem;
-      text-align: center;
-    }
-
-    .back-button a {
-      text-decoration: none;
-      background: linear-gradient(to right, #00bcd4, #008cba);
-      padding: 0.75rem 1.5rem;
-      color: white;
-      border-radius: 10px;
-      font-weight: bold;
-      display: inline-block;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Ritters Control Panel — Full</title>
+<style>
+  :root{
+    --bg:#071018; --panel:rgba(255,255,255,0.03); --accent:#7b5cff; --muted:#9fb0c8; --text:#e9f2ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; font-family:Inter,Segoe UI,Roboto,Arial,system-ui;background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(4px)}
+  h1{margin:0;font-size:1.05rem}
+  .top-actions{display:flex;gap:8px}
+  .btn{background:var(--accent);border:none;padding:8px 12px;border-radius:10px;color:#fff;cursor:pointer;font-weight:600;box-shadow:0 6px 18px rgba(123,92,255,0.12)}
+  .btn.alt{background:#24303a}
+  .layout{display:grid;grid-template-columns:260px 1fr 320px;gap:16px;padding:18px;flex:1}
+  nav{background:var(--panel);padding:14px;border-radius:12px;height:calc(100vh - 120px);overflow:auto}
+  nav button{display:block;width:100%;text-align:left;padding:12px;border-radius:8px;border:none;background:transparent;color:var(--text);cursor:pointer;margin-bottom:8px;font-weight:600}
+  nav button.active{background:linear-gradient(90deg, rgba(123,92,255,0.14), rgba(123,92,255,0.06));}
+  main{background:var(--panel);padding:14px;border-radius:12px;min-height:400px;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,0.35)}
+  aside{background:var(--panel);padding:14px;border-radius:12px;height:calc(100vh - 120px);overflow:auto}
+  section{display:none}
+  section.active{display:block}
+  .card{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;margin-bottom:12px;box-shadow:0 4px 14px rgba(0,0,0,0.2)}
+  input,textarea,select{width:100%;padding:10px;border-radius:8px;border:none;background:rgba(255,255,255,0.02);color:var(--text);margin-top:8px;font-size:0.95rem}
+  input[type="file"]{padding:6px}
+  textarea{min-height:90px}
+  .profile-pic{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.04)}
+  .small{font-size:0.9rem;color:var(--muted)}
+  .laps{max-height:160px;overflow:auto;padding:6px;background:rgba(255,255,255,0.02);border-radius:8px;margin-top:8px}
+  footer{padding:12px;text-align:center;color:var(--muted);font-size:0.85rem}
+  /* fullscreen auth modal */
+  .modal-backdrop{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,10,0.6), rgba(2,6,10,0.6));z-index:9999}
+  .auth-card{width:100%;max-width:620px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:22px;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,0.7)}
+  .auth-top{display:flex;gap:12px;align-items:center}
+  .auth-title{font-size:1.2rem;margin:0}
+  .row{display:flex;gap:8px}
+  .muted-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:6px 10px;border-radius:8px;color:var(--muted)}
+  @media(max-width:1000px){.layout{grid-template-columns:1fr;grid-auto-rows:min-content}aside{order:3;padding-bottom:60px} nav{height:auto}}
+</style>
 </head>
 <body>
-  <div class="task-panel">
-    <h2>📋 Task Manager</h2>
 
-    <div class="task-input">
-      <input type="text" id="taskInput" placeholder="Enter a new task..." />
-      <button onclick="addTask()">Add</button>
+<header>
+  <div style="display:flex;align-items:center;gap:12px">
+    <h1>Ritters Control Panel</h1>
+    <div id="welcomeText" class="small">Please sign up or log in</div>
+  </div>
+  <div class="top-actions">
+    <button class="btn" id="themeToggle">Toggle Theme</button>
+    <button class="btn alt" id="logoutBtn" style="display:none">Logout</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav id="nav">
+    <button data-tab="dashboard" class="active">Dashboard</button>
+    <button data-tab="journal">Journal</button>
+    <button data-tab="notes">Notes</button>
+    <button data-tab="calendar">Calendar</button>
+    <button data-tab="stopwatch">Stopwatch</button>
+    <button data-tab="music">Music</button>
+    <button data-tab="mood">Mood Tracker</button>
+    <button data-tab="weather">Weather</button>
+    <button data-tab="profile">Profile</button>
+  </nav>
+
+  <main>
+    <!-- Dashboard -->
+    <section id="tab-dashboard" class="active">
+      <h2>Dashboard</h2>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div style="flex:1" class="card">
+          <h3 class="small">Quick Tools</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+            <button class="btn" onclick="navTo('stopwatch')">Open Stopwatch</button>
+            <button class="btn" onclick="navTo('music')">Open Music</button>
+            <button class="btn" onclick="navTo('weather')">Open Weather</button>
+          </div>
+        </div>
+        <div style="width:320px" class="card">
+          <h3 class="small">Stats</h3>
+          <div id="statsArea"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Journal -->
+    <section id="tab-journal">
+      <h2>Journal</h2>
+      <input id="journalTitle" placeholder="Title">
+      <textarea id="journalBody" rows="6" placeholder="Write..."></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn" id="saveJournalBtn">Save Entry</button>
+        <button class="btn alt" id="clearJournalBtn">Clear All</button>
+      </div>
+      <h3 style="margin-top:12px">Entries</h3>
+      <div id="journalList"></div>
+    </section>
+
+    <!-- Notes -->
+    <section id="tab-notes">
+      <h2>Notes</h2>
+      <input id="noteTitle" placeholder="Note title">
+      <textarea id="noteBody" rows="4" placeholder="Your note..."></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn" id="saveNoteBtn">Save Note</button>
+        <button class="btn alt" id="clearNotesBtn">Clear All</button>
+      </div>
+      <h3 style="margin-top:12px">Saved Notes</h3>
+      <div id="notesList"></div>
+    </section>
+
+    <!-- Calendar -->
+    <section id="tab-calendar">
+      <h2>Calendar</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input type="date" id="eventDate">
+        <input id="eventTitle" placeholder="Event title">
+        <button class="btn" id="saveEventBtn">Add Event</button>
+      </div>
+      <div style="margin-top:12px" id="calendarEventsList"></div>
+    </section>
+
+    <!-- Stopwatch -->
+    <section id="tab-stopwatch">
+      <h2>Stopwatch</h2>
+      <div id="stopwatchDisplay" style="font-weight:700;font-size:1.4rem">00:00:00.000</div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn" id="startSW">Start</button>
+        <button class="btn alt" id="stopSW">Stop</button>
+        <button class="btn" id="resetSW">Reset</button>
+        <button class="btn alt" id="lapSW">Lap</button>
+      </div>
+      <h4 style="margin-top:12px">Laps</h4>
+      <div class="laps" id="lapsContainer"></div>
+    </section>
+
+    <!-- Music -->
+    <section id="tab-music">
+      <h2>Music Player</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="musicFile" type="file" accept="audio/*">
+        <button class="btn" id="playFileBtn">Load & Play</button>
+      </div>
+      <audio id="musicPlayer" controls style="margin-top:12px;width:100%"></audio>
+    </section>
+
+    <!-- Mood -->
+    <section id="tab-mood">
+      <h2>Mood Tracker</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="moodSelect">
+          <option value="😁">😁 Happy</option>
+          <option value="🙂">🙂 Fine</option>
+          <option value="😐">😐 Meh</option>
+          <option value="😔">😔 Sad</option>
+          <option value="😡">😠 Angry</option>
+          <option value="😴">😴 Tired</option>
+        </select>
+        <input id="moodNote" placeholder="Optional note...">
+        <button class="btn" id="saveMoodBtn">Save Mood</button>
+      </div>
+      <h4 style="margin-top:12px">Mood History</h4>
+      <div id="moodHistory"></div>
+    </section>
+
+    <!-- Weather -->
+    <section id="tab-weather">
+      <h2>Weather</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="weatherCity" placeholder="City (e.g. London, GB)">
+        <button class="btn" id="weatherSearchBtn">Search</button>
+        <button class="btn alt" id="weatherDetectBtn">Use My Location</button>
+      </div>
+      <div style="margin-top:12px" id="weatherResult"></div>
+    </section>
+
+    <!-- Profile -->
+    <section id="tab-profile">
+      <h2>Profile</h2>
+      <div style="display:flex;gap:12px;align-items:center">
+        <img id="profilePic" class="profile-pic" src="" alt="pic">
+        <div style="flex:1">
+          <div class="small">Username</div>
+          <div id="profileName" style="font-weight:700"></div>
+          <div class="small" id="profileJoined"></div>
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <input id="editBio" placeholder="Bio">
+        <input id="editPic" type="file" accept="image/*">
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn" id="saveProfileBtn">Save Profile</button>
+          <button class="btn alt" id="deleteAccountBtn">Delete Account</button>
+        </div>
+      </div>
+      <h3 style="margin-top:12px">Your Stats</h3>
+      <div id="profileStats"></div>
+    </section>
+  </main>
+
+  <aside>
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+      <img id="asidePic" class="profile-pic" src="">
+      <div>
+        <div id="asideName" style="font-weight:700"></div>
+        <div class="small" id="asideBio"></div>
+      </div>
     </div>
 
-    <ul id="taskList"></ul>
+    <div class="card">
+      <div class="small">Quick Weather</div>
+      <div id="asideWeather" style="margin-top:8px">—</div>
+    </div>
+
+    <div class="card">
+      <div class="small">Live Background</div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn" id="bgNext">Next</button>
+        <button class="btn alt" id="bgToggle">Animate</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="small">Session</div>
+      <div style="margin-top:8px">
+        <div id="currentUserLabel"></div>
+        <button class="btn alt" id="logoutBtnAside" style="margin-top:8px">Logout</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<footer>Ritters Control Panel • Data stored locally</footer>
+
+<!-- FULLSCREEN AUTH (blocks app until login) -->
+<div id="authModal" class="modal-backdrop" style="display:none">
+  <div class="auth-card">
+    <div class="auth-top">
+      <img id="authPreview" class="profile-pic" src="">
+      <div style="flex:1">
+        <h2 class="auth-title" id="authTitle">Welcome</h2>
+        <div class="small" id="authSubtitle">Sign up or log in to continue</div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px">
+      <input id="authUser" placeholder="Username (no spaces)" autocomplete="username" />
+      <input id="authPass" placeholder="Password" type="password" autocomplete="current-password" />
+      <input id="authBio" placeholder="Short bio (optional)" />
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+        <input id="authPic" type="file" accept="image/*" />
+        <button id="previewClear" class="btn alt">Clear Pic</button>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button id="signupBtn" class="btn">Sign Up</button>
+        <button id="loginBtn" class="btn alt">Login</button>
+        <button id="demoBtn" class="btn" title="create a demo user (empty)">Demo</button>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="closeAuth" class="btn alt">Close (if logged in)</button>
+        <button id="forgotBtn" class="btn" title="Not secure — local-only">Forgot pw?</button>
+      </div>
+
+      <div id="authMessage" class="small" style="margin-top:12px;color:#f7c6c6"></div>
+    </div>
   </div>
+</div>
 
-  <div class="back-button">
-    <a href="index.html">⬅ Back to Control Panel</a>
-  </div>
+<script>
+/* ---------------------------
+   Ritters Full Single File App
+   --------------------------- */
 
-  <script>
-    let tasks = JSON.parse(localStorage.getItem("tasks") || "[]");
+/* CONFIG */
+const USERS_KEY = 'ritters_users';
+const CURRENT_USER_KEY = 'ritters_currentUser';
+const WEATHER_API_KEY = 'bc35dc734bb6fb3c973c5c4de9d0c0e2'; // <-- your key inserted
 
-    function renderTasks() {
-      const list = document.getElementById("taskList");
-      list.innerHTML = "";
-      tasks.forEach((task, index) => {
-        const li = document.createElement("li");
-        li.className = task.done ? "completed" : "";
-        li.innerHTML = `
-          <span onclick="toggleTask(${index})" style="cursor:pointer;">${task.text}</span>
-          <button class="btn-delete" onclick="deleteTask(${index})">✕</button>
-        `;
-        list.appendChild(li);
-      });
-      localStorage.setItem("tasks", JSON.stringify(tasks));
-    }
+/* UTIL */
+const $ = id => document.getElementById(id);
+function loadUsers(){ return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); }
+function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
+function ukey(k){ return `${currentUser}::${k}`; }
+function userGet(k, fallback){ return JSON.parse(localStorage.getItem(ukey(k)) || JSON.stringify(fallback)); }
+function userSet(k, value){ localStorage.setItem(ukey(k), JSON.stringify(value)); }
 
-    function addTask() {
-      const input = document.getElementById("taskInput");
-      const text = input.value.trim();
-      if (text) {
-        tasks.push({ text, done: false });
-        input.value = "";
-        renderTasks();
-      }
-    }
+/* HASH password using SubtleCrypto SHA-256 -> hex */
+async function hashPassword(pw){
+  const enc = new TextEncoder();
+  const buf = await crypto.subtle.digest('SHA-256', enc.encode(pw));
+  const arr = Array.from(new Uint8Array(buf));
+  return arr.map(b => b.toString(16).padStart(2,'0')).join('');
+}
 
-    function deleteTask(index) {
-      tasks.splice(index, 1);
-      renderTasks();
-    }
+/* AUTH UI ELEMENTS */
+const authModal = $('authModal');
+const authUser = $('authUser'), authPass = $('authPass'), authBio = $('authBio'), authPic = $('authPic');
+const authPreview = $('authPreview'), authMessage = $('authMessage');
 
-    function toggleTask(index) {
-      tasks[index].done = !tasks[index].done;
-      renderTasks();
-    }
+/* preview pic */
+authPic.addEventListener('change', (e)=>{
+  const f = e.target.files[0];
+  if(!f){ authPreview.src = ''; return; }
+  const r = new FileReader();
+  r.onload = () => authPreview.src = r.result;
+  r.readAsDataURL(f);
+});
+$('previewClear').addEventListener('click', ()=> { authPreview.src = ''; authPic.value = ''; });
 
-    renderTasks();
-  </script>
+/* show/hide auth */
+function showAuth(msg=''){ authMessage.textContent = msg; authModal.style.display = 'flex'; }
+function hideAuth(){ authModal.style.display = 'none'; authMessage.textContent = ''; }
+
+/* current user variable */
+let currentUser = localStorage.getItem(CURRENT_USER_KEY) || null;
+
+/* UI helpers */
+const navButtons = document.querySelectorAll('nav button');
+const sections = document.querySelectorAll('main section');
+function setActiveTab(tab){
+  navButtons.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  sections.forEach(s => s.id === `tab-${tab}` ? s.classList.add('active') : s.classList.remove('active'));
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+navButtons.forEach(b => b.addEventListener('click', ()=> setActiveTab(b.dataset.tab)));
+function navTo(t){ setActiveTab(t); }
+
+/* LOGOUT */
+function logout(){
+  localStorage.removeItem(CURRENT_USER_KEY);
+  currentUser = null;
+  showAuth('Signed out. Please sign in.');
+  renderSignedOutUI();
+}
+$('logoutBtn').addEventListener('click', logout);
+$('logoutBtnAside')?.addEventListener('click', logout);
+
+/* THEME toggle (simple) */
+$('themeToggle').addEventListener('click', ()=>{
+  const curBg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+  if(curBg === '#fff'){ document.documentElement.style.setProperty('--bg','#071018'); document.documentElement.style.setProperty('--text','#e9f2ff'); }
+  else { document.documentElement.style.setProperty('--bg','#fff'); document.documentElement.style.setProperty('--text','#111'); }
+});
+
+/* AUTH: signup/login/demo */
+$('signupBtn').addEventListener('click', async ()=>{
+  const name = authUser.value.trim();
+  const pw = authPass.value;
+  if(!name || !pw){ authMessage.textContent = 'Username and password required.'; return; }
+  if(/\s/.test(name)){ authMessage.textContent = 'Username cannot contain spaces.'; return; }
+  const users = loadUsers();
+  if(users[name]){ authMessage.textContent = 'Username taken.'; return; }
+  const hash = await hashPassword(pw);
+  users[name] = { passwordHash: hash, bio: authBio.value||'', pic: authPreview.src||'', joined: new Date().toISOString() };
+  saveUsers(users);
+  localStorage.setItem(CURRENT_USER_KEY, name);
+  initForUser();
+  hideAuth();
+});
+$('loginBtn').addEventListener('click', async ()=>{
+  const name = authUser.value.trim(); const pw = authPass.value;
+  if(!name || !pw){ authMessage.textContent = 'Username and password required.'; return; }
+  const users = loadUsers();
+  if(!users[name]){ authMessage.textContent = 'No such user.'; return; }
+  const hash = await hashPassword(pw);
+  if(hash !== users[name].passwordHash){ authMessage.textContent = 'Invalid credentials.'; return; }
+  localStorage.setItem(CURRENT_USER_KEY, name);
+  initForUser();
+  hideAuth();
+});
+$('demoBtn').addEventListener('click', ()=>{
+  // create blank demo account (empty) and log in
+  const users = loadUsers();
+  if(!users.demo){ users.demo = { passwordHash: '', bio:'', pic:'', joined:new Date().toISOString() }; saveUsers(users); }
+  localStorage.setItem(CURRENT_USER_KEY, 'demo');
+  initForUser();
+  hideAuth();
+});
+$('closeAuth').addEventListener('click', ()=> {
+  if(!currentUser) return; hideAuth();
+});
+$('forgotBtn').addEventListener('click', ()=> {
+  alert('This app stores passwords locally (client side). If you forget it, there is no server-side reset. Consider creating a new account.');
+});
+
+/* Signed out UI */
+function renderSignedOutUI(){
+  $('welcomeText').textContent = 'Please sign in';
+  $('logoutBtn').style.display = 'none';
+  $('currentUserLabel').textContent = '';
+  $('asideName').textContent = '';
+  $('asideBio').textContent = '';
+  $('asidePic').src = '';
+}
+
+/* Signed in UI */
+function renderSignedInUI(userObj){
+  $('welcomeText').textContent = `Welcome, ${currentUser}`;
+  $('logoutBtn').style.display = 'inline-block';
+  $('currentUserLabel').textContent = currentUser;
+  $('asideName').textContent = currentUser;
+  $('asideBio').textContent = userObj.bio || '';
+  $('asidePic').src = userObj.pic || '';
+  $('profilePic').src = userObj.pic || '';
+  $('profileName').textContent = currentUser;
+  $('profileJoined').textContent = 'Joined: ' + new Date(userObj.joined).toLocaleDateString();
+}
+
+/* Per-user rendering of all data */
+function renderAllUserData(){
+  renderJournalList(); renderNotesList(); renderEvents(); renderLaps(); renderMoodHistory(); renderStats(); loadStopwatchState();
+}
+
+/* Initialize after login */
+function initForUser(){
+  currentUser = localStorage.getItem(CURRENT_USER_KEY);
+  const users = loadUsers();
+  const me = users[currentUser] || { bio:'', pic:'', joined:new Date().toISOString(), passwordHash:'' };
+  renderSignedInUI(me);
+  renderAllUserData();
+  hideAuth();
+}
+
+/* If no one logged in, show auth fullscreen */
+if(!currentUser){ showAuth(); renderSignedOutUI(); }
+else { initForUser(); }
+
+/* ---------- JOURNAL ---------- */
+function renderJournalList(){
+  const list = userGet('journal', []);
+  $('journalList').innerHTML = list.map(item => `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between">
+        <strong>${escapeHtml(item.title) || '(no title)'}</strong>
+        <small class="small">${new Date(item.created).toLocaleString()}</small>
+      </div>
+      <div style="margin-top:8px">${escapeHtml(item.body||'').replace(/\n/g,'<br>')}</div>
+      <div style="margin-top:8px"><button class="btn alt" onclick="deleteJournal(${item.id})">Delete</button></div>
+    </div>
+  `).join('');
+}
+window.deleteJournal = function(id){
+  if(!currentUser){ alert('Log in first'); return; }
+  let arr = userGet('journal', []);
+  arr = arr.filter(i => i.id !== id);
+  userSet('journal', arr); renderJournalList(); renderStats();
+};
+$('saveJournalBtn').addEventListener('click', ()=>{
+  if(!currentUser){ alert('Log in first'); return; }
+  const title = $('journalTitle').value.trim(), body = $('journalBody').value.trim();
+  if(!title && !body){ alert('Write something'); return; }
+  const arr = userGet('journal', []); arr.unshift({ id: Date.now(), title, body, created: new Date().toISOString() });
+  userSet('journal', arr);
+  $('journalTitle').value=''; $('journalBody').value='';
+  renderJournalList(); renderStats();
+});
+$('clearJournalBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(confirm('Clear all journal entries?')){ userSet('journal', []); renderJournalList(); renderStats(); } });
+
+/* ---------- NOTES ---------- */
+function renderNotesList(){
+  const arr = userGet('notes', []);
+  $('notesList').innerHTML = arr.map(n => `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between"><strong>${escapeHtml(n.t)||'(no title)'}</strong><small class="small">${new Date(n.created).toLocaleString()}</small></div>
+      <div style="margin-top:8px">${escapeHtml(n.b||'').replace(/\n/g,'<br>')}</div>
+      <div style="margin-top:8px"><button class="btn alt" onclick="deleteNote(${n.id})">Delete</button></div>
+    </div>
+  `).join('');
+}
+window.deleteNote = function(id){
+  if(!currentUser) return alert('Log in first');
+  let arr = userGet('notes', []);
+  arr = arr.filter(n => n.id !== id);
+  userSet('notes', arr); renderNotesList(); renderStats();
+};
+$('saveNoteBtn').addEventListener('click', ()=>{
+  if(!currentUser) return alert('Log in first');
+  const t = $('noteTitle').value.trim(), b = $('noteBody').value.trim();
+  if(!t && !b) return alert('Write a note.');
+  const arr = userGet('notes', []); arr.unshift({ id: Date.now(), t, b, created: new Date().toISOString() });
+  userSet('notes', arr);
+  $('noteTitle').value=''; $('noteBody').value='';
+  renderNotesList(); renderStats();
+});
+$('clearNotesBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(confirm('Clear all notes?')){ userSet('notes', []); renderNotesList(); renderStats(); } });
+
+/* ---------- CALENDAR ---------- */
+function renderEvents(){
+  const events = userGet('events', {});
+  const keys = Object.keys(events).sort();
+  $('calendarEventsList').innerHTML = keys.map(d => `
+    <div class="card"><div style="display:flex;justify-content:space-between"><strong>${d}</strong><small class="small">${events[d].length} event(s)</small></div>
+    <div style="margin-top:8px">${events[d].map(ev => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,0.01)">${escapeHtml(ev.title)}<button class="btn alt" onclick="deleteEvent('${d}',${ev.id})">Delete</button></div>`).join('')}</div></div>
+  `).join('');
+}
+$('saveEventBtn').addEventListener('click', ()=>{
+  if(!currentUser) return alert('Log in first');
+  const date = $('eventDate').value, title = $('eventTitle').value.trim();
+  if(!date || !title) return alert('Pick date and title');
+  const events = userGet('events', {}); if(!events[date]) events[date]=[]; events[date].push({ id: Date.now(), title }); userSet('events', events);
+  $('eventDate').value=''; $('eventTitle').value=''; renderEvents(); renderStats();
+});
+window.deleteEvent = function(date,id){
+  if(!currentUser) return alert('Log in first');
+  const events = userGet('events', {}); if(!events[date]) return; events[date] = events[date].filter(e=> e.id !== id); if(events[date].length===0) delete events[date]; userSet('events', events); renderEvents(); renderStats();
+};
+
+/* ---------- STOPWATCH ---------- */
+let swInterval = null, swStart = 0, swElapsed = 0, swRunning = false;
+function swFormat(ms){
+  const hours = Math.floor(ms/3600000);
+  const mins = Math.floor(ms%3600000/60000);
+  const secs = Math.floor(ms%60000/1000);
+  const msecs = ms%1000;
+  return `${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}.${String(msecs).padStart(3,'0')}`;
+}
+function swUpdate(){ const now = Date.now(); const diff = (swRunning ? now - swStart + swElapsed : swElapsed); $('stopwatchDisplay').textContent = swFormat(diff); }
+$('startSW').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(swRunning) return; swStart = Date.now(); swRunning = true; swInterval = setInterval(swUpdate, 40); });
+$('stopSW').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(!swRunning) return; clearInterval(swInterval); swElapsed += Date.now() - swStart; swRunning = false; swUpdate(); persistStopwatch(); });
+$('resetSW').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(confirm('Reset stopwatch?')){ clearInterval(swInterval); swStart=0; swElapsed=0; swRunning=false; $('stopwatchDisplay').textContent='00:00:00.000'; userSet('sw_laps', []); renderLaps(); persistStopwatch(); }});
+$('lapSW').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const val = $('stopwatchDisplay').textContent; const laps = userGet('sw_laps', []); laps.unshift({ id: Date.now(), time: val }); userSet('sw_laps', laps); renderLaps(); renderStats(); });
+function renderLaps(){ const laps = userGet('sw_laps', []); $('lapsContainer').innerHTML = laps.map(l=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.02)">${l.time}<button class="btn alt" onclick="deleteLap(${l.id})">Del</button></div>`).join(''); }
+window.deleteLap = function(id){ if(!currentUser) return alert('Log in first'); let laps = userGet('sw_laps', []); laps = laps.filter(l=> l.id !== id); userSet('sw_laps', laps); renderLaps(); renderStats(); };
+function persistStopwatch(){ userSet('sw_state', { swElapsed, swRunning, swStart: swRunning ? swStart : 0 }); }
+function loadStopwatchState(){ const s = userGet('sw_state', null); if(s){ swElapsed = s.swElapsed||0; swRunning = s.swRunning||false; if(swRunning){ swStart = Date.now(); swInterval = setInterval(swUpdate,40); } swUpdate(); } renderLaps(); }
+
+/* ---------- MUSIC ---------- */
+$('playFileBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const f = $('musicFile').files[0]; if(!f) return alert('Choose audio file'); const url = URL.createObjectURL(f); $('musicPlayer').src = url; $('musicPlayer').play(); });
+
+/* ---------- MOOD ---------- */
+$('saveMoodBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const mood = $('moodSelect').value, note = $('moodNote').value.trim(); const arr = userGet('moods', []); arr.unshift({ id: Date.now(), mood, note, t: new Date().toISOString() }); userSet('moods', arr); $('moodNote').value=''; renderMoodHistory(); renderStats(); });
+function renderMoodHistory(){ const arr = userGet('moods', []); $('moodHistory').innerHTML = arr.map(m => `<div class="card"><div style="display:flex;justify-content:space-between"><div>${escapeHtml(m.mood)} ${escapeHtml(m.note||'')}</div><small class="small">${new Date(m.t).toLocaleString()}</small></div></div>`).join(''); }
+renderMoodHistory();
+
+/* ---------- WEATHER ---------- */
+const weatherResult = $('weatherResult'), asideWeather = $('asideWeather');
+async function displayWeatherFromData(data){
+  asideWeather.textContent = `${Math.round(data.main.temp)}°C • ${data.weather[0].main}`;
+  weatherResult.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px">
+      <div><strong>${escapeHtml(data.name)}, ${escapeHtml(data.sys.country)}</strong><div class="small">${escapeHtml(data.weather[0].description)}</div></div>
+      <div style="font-size:1.6rem">${Math.round(data.main.temp)}°C</div>
+    </div>
+    <div style="margin-top:8px" class="small">Humidity ${data.main.humidity}% • Wind ${data.wind.speed} m/s</div>
+  `;
+}
+async function fetchWeatherByCity(city){
+  if(!city) return alert('Enter a city, like "London, GB"');
+  if(!WEATHER_API_KEY){ weatherResult.innerHTML = '<div style="color:orange">Weather API key not set.</div>'; return; }
+  try{
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${WEATHER_API_KEY}&units=metric`);
+    const data = await res.json();
+    if(data.cod && data.cod !== 200){ weatherResult.innerHTML = '<div style="color:orange">City not found — try "City, CountryCode".</div>'; return; }
+    displayWeatherFromData(data); userSet('lastWeather', city);
+  } catch(e){
+    weatherResult.innerHTML = '<div style="color:red">Network error</div>';
+  }
+}
+async function fetchWeatherByCoords(lat, lon){
+  if(!WEATHER_API_KEY){ weatherResult.innerHTML = '<div style="color:orange">Weather API key not set.</div>'; return; }
+  try{
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`);
+    const data = await res.json();
+    if(data.cod && data.cod !== 200){ weatherResult.innerHTML = '<div style="color:orange">Location data not found.</div>'; return; }
+    displayWeatherFromData(data); userSet('lastWeather', data.name);
+  } catch(e){
+    weatherResult.innerHTML = '<div style="color:red">Network error</div>';
+  }
+}
+$('weatherSearchBtn').addEventListener('click', ()=> fetchWeatherByCity($('weatherCity').value.trim()));
+$('weatherDetectBtn').addEventListener('click', ()=> { if(!navigator.geolocation) return alert('Geolocation not supported'); navigator.geolocation.getCurrentPosition(p=> fetchWeatherByCoords(p.coords.latitude, p.coords.longitude), ()=> alert('Location denied or unavailable')); });
+(function tryInitWeather(){
+  // if user had last weather, attempt to show (only after login)
+  if(!currentUser) return;
+  const last = userGet('lastWeather', null);
+  if(last){ $('weatherCity').value = last; fetchWeatherByCity(last); }
+  else if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p=> fetchWeatherByCoords(p.coords.latitude, p.coords.longitude), ()=>{/* ignore */});
+})();
+
+/* ---------- LIVE BACKGROUNDS ---------- */
+const backgrounds = ['linear-gradient(120deg,#071018,#0b1b2a)','linear-gradient(120deg,#06283d,#0f4c75)','linear-gradient(120deg,#1f1c2c,#928dab)','linear-gradient(120deg,#0f0c29,#302b63,#24243e)'];
+let bgIndex = 0, bgAnim = null;
+function applyBg(i){ document.body.style.background = backgrounds[i%backgrounds.length]; }
+$('bgNext').addEventListener('click', ()=> { bgIndex=(bgIndex+1)%backgrounds.length; applyBg(bgIndex); });
+$('bgToggle').addEventListener('click', ()=> {
+  if(!bgAnim){ bgAnim = setInterval(()=>{ bgIndex=(bgIndex+1)%backgrounds.length; applyBg(bgIndex); }, 4000); $('bgToggle').textContent='Stop'; } else { clearInterval(bgAnim); bgAnim = null; $('bgToggle').textContent='Animate'; }
+});
+applyBg(bgIndex);
+
+/* ---------- PROFILE EDIT ---------- */
+$('editPic').addEventListener('change', e => {
+  if(!currentUser) return alert('Log in first');
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader(); r.onload = ()=> {
+    $('profilePic').src = r.result; $('asidePic').src = r.result;
+    const users = loadUsers(); if(!users[currentUser]) users[currentUser] = { passwordHash:'', bio:'', pic:'', joined:new Date().toISOString() };
+    users[currentUser].pic = r.result; saveUsers(users);
+  }; r.readAsDataURL(f);
+});
+$('saveProfileBtn').addEventListener('click', ()=> {
+  if(!currentUser) return alert('Log in first');
+  const users = loadUsers();
+  if(!users[currentUser]) users[currentUser] = { passwordHash:'', bio:'', pic:'', joined:new Date().toISOString() };
+  users[currentUser].bio = $('editBio').value;
+  saveUsers(users);
+  $('asideBio').textContent = users[currentUser].bio;
+  alert('Profile saved');
+});
+$('deleteAccountBtn').addEventListener('click', ()=>{
+  if(!currentUser) return alert('Log in first');
+  if(!confirm('Delete account and all data? This is permanent.')) return;
+  const users = loadUsers(); delete users[currentUser]; saveUsers(users);
+  // remove per-user keys
+  Object.keys(localStorage).forEach(k => { if(k.startsWith(currentUser + '::')) localStorage.removeItem(k); });
+  logout();
+});
+
+/* ---------- STATS ---------- */
+function computeStats(){
+  if(!currentUser) return { journal:0, notes:0, moods:0, events:0 };
+  const journal = userGet('journal', []), notes = userGet('notes', []), moods = userGet('moods', []), events = userGet('events', {});
+  return { journal: journal.length, notes: notes.length, moods: moods.length, events: Object.keys(events).length };
+}
+function renderStats(){
+  const s = computeStats();
+  $('statsArea').innerHTML = `
+    <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Journal</div><div>${s.journal}</div></div>
+    <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Notes</div><div>${s.notes}</div></div>
+    <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Moods</div><div>${s.moods}</div></div>
+    <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Events</div><div>${s.events}</div></div>
+  `;
+  $('profileStats').innerHTML = $('statsArea').innerHTML;
+}
+
+/* ---------- LOAD / BOOT ---------- */
+function renderAllUserData(){
+  renderJournalList(); renderNotesList(); renderEvents(); renderLaps(); renderMoodHistory(); renderStats(); loadStopwatchState();
+}
+function loadStopwatchState(){
+  const s = userGet('sw_state', null);
+  if(s){ swElapsed = s.swElapsed||0; swRunning = s.swRunning||false; if(swRunning){ swStart = Date.now(); swInterval = setInterval(swUpdate,40); } swUpdate(); }
+  renderLaps();
+}
+
+/* ensure logout aside works */
+$('logoutBtnAside')?.addEventListener('click', logout);
+
+/* persist renderStats whenever localStorage changes (best-effort) */
+(function(){
+  const orig = localStorage.setItem;
+  localStorage.setItem = function(k,v){ orig.apply(this, arguments); try{ renderStats(); }catch(e){} };
+})();
+
+/* small helper to escape HTML when injecting user content */
+function escapeHtml(str){
+  if(!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+</script>
 </body>
 </html>
