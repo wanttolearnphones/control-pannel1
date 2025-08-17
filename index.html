@@ -73,7 +73,6 @@
     <button data-tab="profile">Profile</button>
   </nav>
   <main>
-    <!-- Dashboard -->
     <section id="tab-dashboard" class="active">
       <h2>Dashboard</h2>
       <div style="display:flex;gap:12px;flex-wrap:wrap">
@@ -94,7 +93,6 @@
       </div>
     </section>
 
-    <!-- Journal -->
     <section id="tab-journal">
       <h2>Journal</h2>
       <input id="journalTitle" placeholder="Title">
@@ -107,7 +105,6 @@
       <div id="journalList"></div>
     </section>
 
-    <!-- Notes -->
     <section id="tab-notes">
       <h2>Notes</h2>
       <input id="noteTitle" placeholder="Note title">
@@ -120,7 +117,6 @@
       <div id="notesList"></div>
     </section>
 
-    <!-- Calendar -->
     <section id="tab-calendar">
       <h2>Calendar</h2>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -131,7 +127,6 @@
       <div style="margin-top:12px" id="calendarEventsList"></div>
     </section>
 
-    <!-- Stopwatch -->
     <section id="tab-stopwatch">
       <h2>Stopwatch</h2>
       <div id="stopwatchDisplay" style="font-weight:700;font-size:1.4rem">00:00:00.000</div>
@@ -145,7 +140,6 @@
       <div class="laps" id="lapsContainer"></div>
     </section>
 
-    <!-- Music -->
     <section id="tab-music">
       <h2>Music Player</h2>
       <div style="display:flex;gap:8px;align-items:center">
@@ -155,7 +149,6 @@
       <audio id="musicPlayer" controls style="margin-top:12px;width:100%"></audio>
     </section>
 
-    <!-- Mood -->
     <section id="tab-mood">
       <h2>Mood Tracker</h2>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -174,7 +167,6 @@
       <div id="moodHistory"></div>
     </section>
 
-    <!-- Weather -->
     <section id="tab-weather">
       <h2>Weather</h2>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -185,7 +177,6 @@
       <div style="margin-top:12px" id="weatherResult"></div>
     </section>
 
-    <!-- Search -->
     <section id="tab-search">
       <h2>Search</h2>
       <div style="display:flex;gap:8px;align-items:center">
@@ -203,7 +194,6 @@
       </div>
     </section>
 
-    <!-- Messages -->
     <section id="tab-messages">
       <h2>Messages (Demo Room)</h2>
       <div class="card">
@@ -217,7 +207,6 @@
       </div>
     </section>
 
-    <!-- Backgrounds -->
     <section id="tab-backgrounds">
       <h2>Live Backgrounds</h2>
       <div class="card">
@@ -237,7 +226,6 @@
       </div>
     </section>
 
-    <!-- Profile -->
     <section id="tab-profile">
       <h2>Profile</h2>
       <div style="display:flex;gap:12px;align-items:center">
@@ -287,7 +275,6 @@
 
 <footer>Ritters Control Panel • Demo — Local data only</footer>
 
-<!-- AUTH modal -->
 <div id="authModal" class="modal-backdrop" style="display:none">
   <div class="auth-card">
     <div class="auth-top">
@@ -835,7 +822,6 @@ renderStats();
 renderChat();
 
 </script>
-<!-- --- Mini Games: Snake (self-contained) --- -->
 <style>
   /* Put this in your main CSS if you prefer; kept small for copy-paste */
   #gamesPanel { padding:20px; color:var(--text,#e6eef8); font-family:system-ui,-apple-system,Segoe UI,Roboto; }
@@ -1052,6 +1038,93 @@ renderChat();
       ctx.stroke();
     }
 
-    //
+    // snake
+    ctx.fillStyle = '#4caf50'; // body
+    ctx.strokeStyle = '#2e7d32'; // body
+    snake.forEach((s,i) => {
+      // head
+      if(i===0) { ctx.fillStyle = '#66bb6a'; ctx.strokeStyle = '#388e3c'; }
+      ctx.beginPath();
+      roundRect(ctx, s.x*cellSize, s.y*cellSize, cellSize, cellSize, 2);
+      ctx.fill();
+      ctx.stroke();
+      // restore body color
+      ctx.fillStyle = '#4caf50';
+      ctx.strokeStyle = '#2e7d32';
+    });
+
+    // apple
+    if(apple){
+      ctx.fillStyle = '#f44336';
+      ctx.beginPath();
+      ctx.arc(apple.x * cellSize + cellSize/2, apple.y * cellSize + cellSize/2, cellSize/2.5, 0, 2*Math.PI);
+      ctx.fill();
+    }
+  }
+
+  // Round rectangle helper
+  function roundRect(ctx, x, y, width, height, radius, fill=true, stroke=true) {
+    if (typeof radius === 'number') { radius = {tl: radius, tr: radius, br: radius, bl: radius}; }
+    else { const defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0}; for (let side in defaultRadius) { radius[side] = radius[side] || defaultRadius[side]; } }
+    ctx.beginPath();
+    ctx.moveTo(x + radius.tl, y);
+    ctx.lineTo(x + width - radius.tr, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+    ctx.lineTo(x + width, y + height - radius.br);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+    ctx.lineTo(x + radius.bl, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+    ctx.lineTo(x, y + radius.tl);
+    ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+    ctx.closePath();
+    if (fill) { ctx.fill(); }
+    if (stroke) { ctx.stroke(); }
+  }
+
+  // Controls
+  document.addEventListener('keydown', e => {
+    if(!running || paused) return;
+    switch(e.key){
+      case 'ArrowUp': case 'w': if(dir.y !== 1) nextDir={x:0,y:-1}; break;
+      case 'ArrowDown': case 's': if(dir.y !== -1) nextDir={x:0,y:1}; break;
+      case 'ArrowLeft': case 'a': if(dir.x !== 1) nextDir={x:-1,y:0}; break;
+      case 'ArrowRight': case 'd': if(dir.x !== -1) nextDir={x:1,y:0}; break;
+    }
+  });
+
+  // Touch controls
+  let startX, startY;
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  });
+  canvas.addEventListener('touchend', e => {
+    if(!running || paused) return;
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+    const diffX = endX - startX;
+    const diffY = endY - startY;
+
+    if(Math.abs(diffX) > Math.abs(diffY)){
+      if(diffX > 0){ if(dir.x !== -1) nextDir = {x:1,y:0}; }
+      else { if(dir.x !== 1) nextDir = {x:-1,y:0}; }
+    } else {
+      if(diffY > 0){ if(dir.y !== -1) nextDir = {x:0,y:1}; }
+      else { if(dir.y !== 1) nextDir = {x:0,y:-1}; }
+    }
+  });
+
+  // Event listeners
+  startBtn.addEventListener('click', startGame);
+  pauseBtn.addEventListener('click', pauseGame);
+  resetBtn.addEventListener('click', resetGame);
+  closeBtn.addEventListener('click', closeGame);
+
+  // initial draw
+  draw();
+})();
+</script>
+
 </body>
 </html>
