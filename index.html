@@ -43,6 +43,15 @@
   .bg-preview{width:100%;height:160px;border-radius:8px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,0.03)}
   /* small search area */
   .search-results{margin-top:10px}
+  /* streaming panel */
+  .stream-player-container { margin-bottom: 20px; }
+  .stream-player-container h3 { margin-bottom: 8px; }
+  .stream-player-container iframe {
+    width: 100%;
+    height: 315px; /* Standard YouTube embed height */
+    border-radius: 12px;
+    border: none;
+  }
 </style>
 </head>
 <body>
@@ -64,6 +73,7 @@
     <button data-tab="calendar">Calendar</button>
     <button data-tab="stopwatch">Stopwatch</button>
     <button data-tab="music">Music</button>
+    <button data-tab="streaming">Streaming</button>
     <button data-tab="mood">Mood Tracker</button>
     <button data-tab="weather">Weather</button>
     <button data-tab="search">Search</button>
@@ -146,6 +156,26 @@
     <button class="btn" id="playFileBtn">Load & Play</button>
   </div>
   <audio id="musicPlayer" controls style="margin-top:12px;width:100%"></audio>
+</section>
+
+<section id="tab-streaming">
+  <h2>Streaming</h2>
+  <div class="stream-player-container">
+    <h3 class="small">YouTube Music</h3>
+    <iframe
+      src="https://www.youtube.com/embed/videoseries?list=PL46f1gXlq-s8V4h-7Y7M1v4B4B9z4X34G"
+      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+    ></iframe>
+  </div>
+  <div class="stream-player-container">
+    <h3 class="small">Spotify</h3>
+    <iframe
+      src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYbm5M?utm_source=generator"
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+      loading="lazy"
+    ></iframe>
+  </div>
 </section>
 
 <section id="tab-mood">
@@ -460,7 +490,6 @@ function renderSignedOutUI(){
   $('profilePic').src = '';
   $('profileName').textContent = '';
   $('profileJoined').textContent = '';
-  $('profileStats').innerHTML = '';
 }
 function renderSignedInUI(userObj){
   $('welcomeText').textContent = `Welcome, ${currentUser}`;
