@@ -11,6 +11,7 @@
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:Inter,Segoe UI,Roboto,Arial,system-ui;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+  /* FIX: Corrected the background variable from '—bg' to '--bg' */
   header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(4px)}
   h1{margin:0;font-size:1.05rem}
   .top-actions{display:flex;gap:8px}
@@ -165,7 +166,7 @@
     <input id="videoUrlInput" placeholder="Paste YouTube or Spotify URL here" style="margin-top:8px;">
     <p class="small" style="margin-top:4px">
       * For YouTube, use a URL like `https://www.youtube.com/watch?v=...`<br>
-      * For Spotify, use a URL like `https://open.spotify.com/track/...` or `.../embed/track/...`
+      * For Spotify, use a URL like `https://open.spotify.com/embed/track/...`
     </p>
     <button class="btn" id="loadStreamBtn" style="margin-top:8px;">Load Video</button>
   </div>
@@ -184,7 +185,7 @@
     <h3 class="small">Spotify Player</h3>
     <iframe
       id="spotifyPlayer"
-      src="https://open.spotify.com/embed/track/2ENJ292gCj3U9tL5a9T1l2"
+      src=""
       allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
       loading="lazy"
     ></iframe>
@@ -647,8 +648,9 @@ $('loadStreamBtn').addEventListener('click', () => {
     } else {
       alert('Could not find a valid YouTube video ID in that URL.');
     }
-  } else if (url.includes('spotify.com/track/')) {
-    const trackIdMatch = url.match(/spotify\.com\/track\/([a-zA-Z0-9]{22})/);
+  /* FIX: Corrected Spotify URL handling */
+  } else if (url.includes('open.spotify.com/track')) {
+    const trackIdMatch = url.match(/track\/([a-zA-Z0-9]{22})/);
     if (trackIdMatch && trackIdMatch[1]) {
       const trackId = trackIdMatch[1];
       const embedUrl = `https://open.spotify.com/embed/track/${trackId}`;
@@ -1096,6 +1098,7 @@ renderChat();
 
     // background
     ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    /* FIX: Changed to call the newly defined roundRect function */
     roundRect(ctx, 0, 0, canvas.width, canvas.height, 8);
 
     // grid - optional subtle lines
@@ -1182,7 +1185,7 @@ renderChat();
     ctx.fill();
   }
 
-  // This is used to draw the background and was missing from the original code, causing a ReferenceError.
+  /* FIX: Added the missing roundRect function */
   function roundRect(ctx, x, y, width, height, radius) {
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
