@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Ritters Control Panel — Full</title>
+<title>Ritters Control Panel — Fixed Search</title>
 <style>
   :root{
     --bg:#071018; --panel:rgba(255,255,255,0.03); --accent:#7b5cff; --muted:#9fb0c8; --text:#e9f2ff;
@@ -31,7 +31,6 @@
   .small{font-size:0.9rem;color:var(--muted)}
   .laps{max-height:160px;overflow:auto;padding:6px;background:rgba(255,255,255,0.02);border-radius:8px;margin-top:8px}
   footer{padding:12px;text-align:center;color:var(--muted);font-size:0.85rem}
-  /* fullscreen auth modal */
   .modal-backdrop{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,10,0.6), rgba(2,6,10,0.6));z-index:9999}
   .auth-card{width:100%;max-width:620px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:22px;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,0.7)}
   .auth-top{display:flex;gap:12px;align-items:center}
@@ -39,7 +38,6 @@
   .row{display:flex;gap:8px}
   .muted-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:6px 10px;border-radius:8px;color:var(--muted)}
   @media(max-width:1000px){.layout{grid-template-columns:1fr;grid-auto-rows:min-content}aside{order:3;padding-bottom:60px} nav{height:auto}}
-  /* small extras for search & messages */
   .search-results{margin-top:12px}
   .msg-list{max-height:220px;overflow:auto;padding:8px;background:rgba(255,255,255,0.02);border-radius:8px}
   .msg{margin-bottom:8px;padding:6px;border-radius:6px;background:rgba(0,0,0,0.04)}
@@ -214,7 +212,7 @@
           <input id="msgText" placeholder="Write a message..." onkeydown="if(event.key==='Enter') sendMessage()">
           <button class="btn" id="sendMsgBtn">Send</button>
         </div>
-        <div class="small" style="margin-top:8px">Note: this is a local shared room stored in your browser (localStorage). To chat across the internet you'll need a small server (I can add that next).</div>
+        <div class="small" style="margin-top:8px">Note: local shared room stored in your browser (localStorage). For internet chat you'll need a server.</div>
       </div>
     </section>
 
@@ -314,14 +312,13 @@
 
 <script>
 /* ---------------------------
-   Ritters Full Single File App
-   Combined + Search + Messaging
+   Ritters App (fixed search)
    --------------------------- */
 
 /* CONFIG */
 const USERS_KEY = 'ritters_users';
 const CURRENT_USER_KEY = 'ritters_currentUser';
-const WEATHER_API_KEY = 'bc35dc734bb6fb3c973c5c4de9d0c0e2'; // <- keep or replace with your own
+const WEATHER_API_KEY = 'bc35dc734bb6fb3c973c5c4de9d0c0e2'; // replace if you want
 
 /* UTIL */
 const $ = id => document.getElementById(id);
@@ -339,13 +336,11 @@ async function hashPassword(pw){
   return arr.map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
-/* AUTH UI ELEMENTS */
+/* AUTH UI */
 const authModal = $('authModal');
 const authUser = $('authUser'), authPass = $('authPass'), authBio = $('authBio'), authPic = $('authPic');
 const authPreview = $('authPreview'), authMessage = $('authMessage');
 $('previewClear').addEventListener('click', ()=> { authPreview.src = ''; authPic.value = ''; });
-
-/* preview pic */
 authPic.addEventListener('change', (e)=>{
   const f = e.target.files[0];
   if(!f){ authPreview.src = ''; return; }
@@ -353,15 +348,13 @@ authPic.addEventListener('change', (e)=>{
   r.onload = () => authPreview.src = r.result;
   r.readAsDataURL(f);
 });
-
-/* show/hide auth */
 function showAuth(msg=''){ authMessage.textContent = msg; authModal.style.display = 'flex'; }
 function hideAuth(){ authModal.style.display = 'none'; authMessage.textContent = ''; }
 
-/* current user variable */
+/* current user */
 let currentUser = localStorage.getItem(CURRENT_USER_KEY) || null;
 
-/* UI helpers */
+/* navigation */
 const navButtons = document.querySelectorAll('nav button');
 const sections = document.querySelectorAll('main section');
 function setActiveTab(tab){
@@ -372,7 +365,7 @@ function setActiveTab(tab){
 navButtons.forEach(b => b.addEventListener('click', ()=> setActiveTab(b.dataset.tab)));
 function navTo(t){ setActiveTab(t); }
 
-/* LOGOUT */
+/* logout */
 function logout(){
   localStorage.removeItem(CURRENT_USER_KEY);
   currentUser = null;
@@ -382,14 +375,14 @@ function logout(){
 $('logoutBtn').addEventListener('click', logout);
 $('logoutBtnAside')?.addEventListener('click', logout);
 
-/* THEME toggle (simple) */
+/* theme toggle */
 $('themeToggle').addEventListener('click', ()=>{
   const curBg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
   if(curBg === '#fff'){ document.documentElement.style.setProperty('--bg','#071018'); document.documentElement.style.setProperty('--text','#e9f2ff'); }
   else { document.documentElement.style.setProperty('--bg','#fff'); document.documentElement.style.setProperty('--text','#111'); }
 });
 
-/* AUTH: signup/login/demo */
+/* signup/login/demo */
 $('signupBtn').addEventListener('click', async ()=>{
   const name = authUser.value.trim();
   const pw = authPass.value;
@@ -416,7 +409,6 @@ $('loginBtn').addEventListener('click', async ()=>{
   hideAuth();
 });
 $('demoBtn').addEventListener('click', ()=>{
-  // create blank demo account (empty) and log in
   const users = loadUsers();
   if(!users.demo){ users.demo = { passwordHash: '', bio:'', pic:'', joined:new Date().toISOString() }; saveUsers(users); }
   localStorage.setItem(CURRENT_USER_KEY, 'demo');
@@ -430,7 +422,7 @@ $('forgotBtn').addEventListener('click', ()=> {
   alert('This app stores passwords locally (client side). If you forget it, there is no server-side reset. Consider creating a new account.');
 });
 
-/* Signed out UI */
+/* render UI signed out/in */
 function renderSignedOutUI(){
   $('welcomeText').textContent = 'Please sign in';
   $('logoutBtn').style.display = 'none';
@@ -443,8 +435,6 @@ function renderSignedOutUI(){
   $('profileJoined').textContent = '';
   $('profileStats').innerHTML = '';
 }
-
-/* Signed in UI */
 function renderSignedInUI(userObj){
   $('welcomeText').textContent = `Welcome, ${currentUser}`;
   $('logoutBtn').style.display = 'inline-block';
@@ -457,7 +447,7 @@ function renderSignedInUI(userObj){
   $('profileJoined').textContent = 'Joined: ' + new Date(userObj.joined).toLocaleDateString();
 }
 
-/* Initialize after login */
+/* init */
 function initForUser(){
   currentUser = localStorage.getItem(CURRENT_USER_KEY);
   const users = loadUsers();
@@ -466,8 +456,6 @@ function initForUser(){
   renderAllUserData();
   hideAuth();
 }
-
-/* If no one logged in, show auth fullscreen */
 if(!currentUser){ showAuth(); renderSignedOutUI(); }
 else { initForUser(); }
 
@@ -655,7 +643,6 @@ $('deleteAccountBtn').addEventListener('click', ()=>{
   if(!currentUser) return alert('Log in first');
   if(!confirm('Delete account and all data? This is permanent.')) return;
   const users = loadUsers(); delete users[currentUser]; saveUsers(users);
-  // remove per-user keys
   Object.keys(localStorage).forEach(k => { if(k.startsWith(currentUser + '::')) localStorage.removeItem(k); });
   logout();
 });
@@ -677,12 +664,29 @@ function renderStats(){
   $('profileStats').innerHTML = $('statsArea').innerHTML;
 }
 
-/* ---------- SEARCH ---------- */
-/*
-  Behavior:
-  - Attempts to fetch a DuckDuckGo Instant Answer for a quick result (CORS allowed).
-  - Shows links to perform the query on Google/Bing/DuckDuckGo in a new tab.
-*/
+/* ---------- SEARCH (fixed: uses JSONP fallback) ---------- */
+/* JSONP helper */
+function jsonp(url, timeout = 10000){
+  return new Promise((resolve, reject) => {
+    const cbName = 'ddg_cb_' + Date.now() + '_' + Math.floor(Math.random()*100000);
+    window[cbName] = function(data){
+      cleanup();
+      resolve(data);
+    };
+    const script = document.createElement('script');
+    const separator = url.includes('?') ? '&' : '?';
+    script.src = url + separator + 'callback=' + cbName;
+    script.onerror = () => { cleanup(); reject(new Error('JSONP load error')); };
+    document.body.appendChild(script);
+    const timer = setTimeout(()=>{ cleanup(); reject(new Error('JSONP timeout')); }, timeout);
+    function cleanup(){
+      clearTimeout(timer);
+      try{ delete window[cbName]; }catch(e){}
+      script.remove();
+    }
+  });
+}
+
 $('doSearchBtn').addEventListener('click', performSearch);
 $('openSearchInNewTab').addEventListener('click', ()=> {
   const q = $('searchQuery').value.trim();
@@ -693,6 +697,7 @@ $('openSearchInNewTab').addEventListener('click', ()=> {
 async function performSearch(){
   const q = $('searchQuery').value.trim();
   if(!q) return alert('Enter a query');
+  // show search links always
   $('searchResults').innerHTML = `
     <div><a href="https://www.google.com/search?q=${encodeURIComponent(q)}" target="_blank">Open Google results for "${escapeHtml(q)}"</a></div>
     <div style="margin-top:6px"><a href="https://www.bing.com/search?q=${encodeURIComponent(q)}" target="_blank">Open Bing results</a></div>
@@ -700,39 +705,66 @@ async function performSearch(){
   `;
   $('searchQuick').textContent = 'Searching...';
 
-  // Try DuckDuckGo Instant Answer API for a quick summary (CORS-friendly)
-  // If it fails, we still keep the links above so the user can open a search.
+  // DuckDuckGo Instant Answer endpoint (works with JSONP)
+  const endpoint = `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`;
+
+  // First try fetch (may fail due to CORS). If it fails, use JSONP fallback.
   try {
-    const endpoint = `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`;
-    const res = await fetch(endpoint);
-    if(!res.ok) throw new Error('no response');
+    const res = await fetch(endpoint, { method:'GET' });
+    if(!res.ok) throw new Error('fetch failed');
     const data = await res.json();
-    // Compose quick answer
-    let qa = '';
-    if(data.AbstractText && data.AbstractText.trim()){
-      qa += data.AbstractText;
-      if(data.AbstractURL) qa += ` — source: ${data.AbstractURL}`;
-    } else if(data.Heading && data.AbstractText){ qa += `${data.Heading} — ${data.AbstractText}`; }
-    else if(data.RelatedTopics && data.RelatedTopics.length){
-      // show first related topic(s)
-      const t = data.RelatedTopics[0];
-      if(t.Text) qa += t.Text;
-      if(t.FirstURL) qa += ` — ${t.FirstURL}`;
-    }
-    if(!qa){
-      qa = 'No quick answer found. Open the web search links above for full results.';
-    }
-    $('searchQuick').textContent = qa;
+    handleDuckAnswer(data);
+    return;
   } catch (e) {
-    $('searchQuick').textContent = 'Quick answer failed (network or CORS). Use the links above to search in a new tab.';
+    // fallback to JSONP
+    try {
+      const data = await jsonp(endpoint, 10000);
+      handleDuckAnswer(data);
+      return;
+    } catch (e2) {
+      $('searchQuick').textContent = 'Quick answer failed (network/CORS). Use the links above for full search.';
+      return;
+    }
   }
 }
 
-/* ---------- MESSAGES (simple public room) ---------- */
-/*
-  messages stored in localStorage under key: 'ritters_public_chat'
-  Structure: [{id, user, text, t}]
-*/
+function handleDuckAnswer(data){
+  // Compose a concise quick answer and show some related topics
+  try{
+    let qaHtml = '';
+    if(data && data.AbstractText && data.AbstractText.trim()){
+      qaHtml += `<div>${escapeHtml(data.AbstractText)}</div>`;
+      if(data.AbstractURL) qaHtml += `<div class="small" style="margin-top:6px">Source: <a target="_blank" href="${escapeHtml(data.AbstractURL)}">${escapeHtml(data.AbstractURL)}</a></div>`;
+    } else if(data && data.Heading && data.AbstractText){
+      qaHtml += `<div><strong>${escapeHtml(data.Heading)}</strong> — ${escapeHtml(data.AbstractText)}</div>`;
+    } else {
+      // pick first related topic(s)
+      let related = [];
+      if(Array.isArray(data.RelatedTopics)){
+        for(const t of data.RelatedTopics){
+          if(t.Text) related.push({text:t.Text, url: t.FirstURL});
+          else if(t.Topics && t.Topics.length){
+            for(const sub of t.Topics){
+              if(sub.Text) related.push({text: sub.Text, url: sub.FirstURL});
+            }
+          }
+          if(related.length >= 5) break;
+        }
+      }
+      if(related.length){
+        qaHtml += '<div><strong>Related</strong></div><ul>';
+        related.slice(0,5).forEach(r => qaHtml += `<li>${escapeHtml(r.text)} ${r.url?`— <a target="_blank" href="${escapeHtml(r.url)}">source</a>`:''}</li>`);
+        qaHtml += '</ul>';
+      }
+    }
+    if(!qaHtml) qaHtml = 'No quick answer found. Use the links above for a full web search.';
+    $('searchQuick').innerHTML = qaHtml;
+  }catch(err){
+    $('searchQuick').textContent = 'Error processing quick answer';
+  }
+}
+
+/* ---------- MESSAGES (local public room) ---------- */
 const CHAT_KEY = 'ritters_public_chat';
 function loadChat(){ try{ return JSON.parse(localStorage.getItem(CHAT_KEY) || '[]'); }catch(e){ return []; } }
 function saveChat(arr){ localStorage.setItem(CHAT_KEY, JSON.stringify(arr)); }
@@ -753,7 +785,6 @@ function sendMessage(){
   $('msgText').value = '';
   renderChat();
 }
-// simulate "real-time" by listening to storage events (other tabs) and polling as fallback
 window.addEventListener('storage', (ev)=>{
   if(ev.key === CHAT_KEY) renderChat();
 });
@@ -769,17 +800,15 @@ function loadStopwatchState(){
   if(s){ swElapsed = s.swElapsed||0; swRunning = s.swRunning||false; if(swRunning){ swStart = Date.now(); swInterval = setInterval(swUpdate,40); } swUpdate(); }
   renderLaps();
 }
-
-/* ensure logout aside works */
 $('logoutBtnAside')?.addEventListener('click', logout);
 
-/* persist renderStats whenever localStorage changes (best-effort) */
+/* persist renderStats when localStorage changes (best-effort) */
 (function(){
   const orig = localStorage.setItem;
   localStorage.setItem = function(k,v){ orig.apply(this, arguments); try{ renderStats(); }catch(e){} };
 })();
 
-/* small helper to escape HTML when injecting user content */
+/* simple HTML escape */
 function escapeHtml(str){
   if(!str) return '';
   return String(str)
@@ -790,7 +819,7 @@ function escapeHtml(str){
     .replace(/'/g, '&#039;');
 }
 
-/* ---------- initial call ---------- */
+/* initial */
 renderMoodHistory();
 renderStats();
 renderChat();
