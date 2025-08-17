@@ -160,18 +160,31 @@
 
 <section id="tab-streaming">
   <h2>Streaming</h2>
+  <div class="card">
+    <h3 class="small">Load a YouTube or Spotify video</h3>
+    <input id="videoUrlInput" placeholder="Paste YouTube or Spotify URL here" style="margin-top:8px;">
+    <p class="small" style="margin-top:4px">
+      * For YouTube, use a URL like `https://www.youtube.com/watch?v=...`<br>
+      * For Spotify, use a URL like `https://open.spotify.com/track/...` or `.../embed/track/...`
+    </p>
+    <button class="btn" id="loadStreamBtn" style="margin-top:8px;">Load Video</button>
+  </div>
+
   <div class="stream-player-container">
-    <h3 class="small">YouTube Music</h3>
+    <h3 class="small">YouTube Video Player</h3>
     <iframe
-      src="https://www.youtube.com/embed/videoseries?list=PL46f1gXlq-s8V4h-7Y7M1v4B4B9z4X34G"
+      id="youtubePlayer"
+      src="https://www.youtube.com/embed/jNQXAC9IVRw?rel=0"
       allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
       allowfullscreen
     ></iframe>
   </div>
+  
   <div class="stream-player-container">
-    <h3 class="small">Spotify</h3>
+    <h3 class="small">Spotify Player</h3>
     <iframe
-      src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYbm5M?utm_source=generator"
+      id="spotifyPlayer"
+      src="https://open.spotify.com/embed/track/2ENJ292gCj3U9tL5a9T1l2"
       allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
       loading="lazy"
     ></iframe>
@@ -499,7 +512,6 @@ function renderSignedInUI(userObj){
   $('asideBio').textContent = userObj.bio || '';
   $('asidePic').src = userObj.pic || '';
   $('profilePic').src = userObj.pic || '';
-  $('profileName').textContent = currentUser;
   $('profileJoined').textContent = 'Joined: ' + new Date(userObj.joined).toLocaleDateString();
 }
 
@@ -618,6 +630,36 @@ function loadStopwatchState(){ const s = userGet('sw_state', null); if(s){ swEla
 /* ------------------ Music ------------------ */
 $('playFileBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const f = $('musicFile').files[0]; if(!f) return alert('Choose audio file'); const url = URL.createObjectURL(f); $('musicPlayer').src = url; $('musicPlayer').play(); });
 
+/* ------------------ Streaming (NEW) ------------------ */
+$('loadStreamBtn').addEventListener('click', () => {
+  const url = $('videoUrlInput').value.trim();
+  if (!url) {
+    alert('Please enter a valid URL.');
+    return;
+  }
+  
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    const videoIdMatch = url.match(/(?:\?v=|\/embed\/|\/watch\?v=|\/shorts\/|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+    if (videoIdMatch && videoIdMatch[1]) {
+      const videoId = videoIdMatch[1];
+      const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      $('youtubePlayer').src = embedUrl;
+    } else {
+      alert('Could not find a valid YouTube video ID in that URL.');
+    }
+  } else if (url.includes('spotify.com/track/')) {
+    const trackIdMatch = url.match(/spotify\.com\/track\/([a-zA-Z0-9]{22})/);
+    if (trackIdMatch && trackIdMatch[1]) {
+      const trackId = trackIdMatch[1];
+      const embedUrl = `https://open.spotify.com/embed/track/${trackId}`;
+      $('spotifyPlayer').src = embedUrl;
+    } else {
+      alert('Could not find a valid Spotify track ID in that URL.');
+    }
+  } else {
+    alert('Unsupported URL. Please use a YouTube or Spotify URL.');
+  }
+});
 /* ------------------ Mood ------------------ */
 $('saveMoodBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const mood = $('moodSelect').value, note = $('moodNote').value.trim(); const arr = userGet('moods', []); arr.unshift({ id: Date.now(), mood, note, t: new Date().toISOString() }); userSet('moods', arr); $('moodNote').value=''; renderMoodHistory(); renderStats(); });
 function renderMoodHistory(){ const arr = userGet('moods', []); $('moodHistory').innerHTML = arr.map(m => `<div class="card"><div style="display:flex;justify-content:space-between"><div>${escapeHtml(m.mood)} ${escapeHtml(m.note||'')}</div><small class="small">${new Date(m.t).toLocaleString()}</small></div></div>`).join(''); }
@@ -879,11 +921,11 @@ $('logoutBtnAside')?.addEventListener('click', logout);
 function escapeHtml(str){
   if(!str) return '';
   return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"')
+    .replace(/'/g, ''');
 }
 
 /* initial draws */
