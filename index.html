@@ -69,6 +69,7 @@
     <button data-tab="search">Search</button>
     <button data-tab="messages">Messages</button>
     <button data-tab="backgrounds">Backgrounds</button>
+    <button data-tab="games">App Store</button>
     <button data-tab="profile">Profile</button>
   </nav>
   <main>
@@ -220,6 +221,51 @@
     <div style="display:flex;gap:8px;margin-top:8px">
       <button class="btn" id="bgApplyBtn">Apply & Save</button>
       <button class="btn alt" id="bgClearBtn">Clear</button>
+    </div>
+  </div>
+</section>
+
+<section id="tab-games">
+  <h2>App Store / Mini Games</h2>
+  <p>Play some small games right inside the OS. Your high scores will save locally.</p>
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:32px">🐍</span>
+      <div>
+        <strong>Snake</strong>
+        <div class="small">A classic game of snake.</div>
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <button class="btn" onclick="navTo('snake')">Play Snake</button>
+    </div>
+  </div>
+  <p style="margin-top:20px;opacity:0.8">More games coming soon...</p>
+</section>
+
+<section id="tab-snake">
+  <div id="gamesPanel">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <span style="font-size:26px">🎮 Snake</span>
+    </div>
+    <div id="snakeWrap" role="region" aria-label="Snake Game">
+      <div id="snakeHeader">
+        <div>
+          <div style="font-size:18px;font-weight:700">Snake</div>
+          <div id="snakeInfo">Use arrow keys or swipe to play. Eat apples to grow.</div>
+        </div>
+        <div style="text-align:right">
+          <div id="snakeScore">Score: 0</div>
+          <div id="snakeHigh" style="opacity:0.8;font-size:13px">High: 0</div>
+        </div>
+      </div>
+      <canvas id="snakeCanvas" width="360" height="360"></canvas>
+      <div class="snakeControls">
+        <button id="snakeStart" class="btn">Start</button>
+        <button id="snakePause" class="btn alt">Pause</button>
+        <button id="snakeReset" class="btn alt">Restart</button>
+        <button id="snakeClose" class="btn alt" onclick="navTo('games')">Close</button>
+      </div>
     </div>
   </div>
 </section>
@@ -818,7 +864,7 @@ renderChat();
 
 </script>
 <style>
-  /* Put this in your main CSS if you prefer; kept small for copy-paste */
+  /* Snake game styles */
   #gamesPanel { padding:20px; color:var(--text,#e6eef8); font-family:system-ui,-apple-system,Segoe UI,Roboto; }
   #snakeWrap { max-width:480px; margin:10px 0; background:rgba(255,255,255,0.02); padding:16px; border-radius:12px; box-shadow:0 6px 14px rgba(0,0,0,0.5); }
   #snakeHeader { display:flex; align-items:center; justify-content:space-between; gap:12px; }
@@ -829,41 +875,16 @@ renderChat();
   #snakeScore { font-weight:700; }
   #snakeInfo { opacity:0.8; font-size:13px; }
 </style>
-<div id="gamesPanel" class="panel">
-  <div style="display:flex;align-items:center;gap:12px;">
-    <span style="font-size:26px">🎮 Mini Games</span>
-  </div>
-    <div id="snakeWrap" role="region" aria-label="Snake Game">
-    <div id="snakeHeader">
-      <div>
-        <div style="font-size:18px;font-weight:700">Snake</div>
-        <div id="snakeInfo">Use arrow keys or swipe to play. Eat apples to grow.</div>
-      </div>
-      <div style="text-align:right">
-        <div id="snakeScore">Score: 0</div>
-        <div id="snakeHigh" style="opacity:0.8;font-size:13px">High: 0</div>
-      </div>
-    </div>
-    <canvas id="snakeCanvas" width="360" height="360"></canvas>
-
-<div class="snakeControls">
-  <button id="snakeStart" class="btn">Start</button>
-  <button id="snakePause" class="btn small">Pause</button>
-  <button id="snakeReset" class="btn small">Restart</button>
-  <button id="snakeClose" class="btn small" style="background:transparent;border:1px solid rgba(255,255,255,0.06)">Close</button>
-</div>
-
-  </div>
-</div>
 <script>
 (function(){
   // Config
   const canvas = document.getElementById('snakeCanvas');
+  if(!canvas) return; // Exit if the snake canvas element doesn't exist
+
   const ctx = canvas.getContext('2d');
   const startBtn = document.getElementById('snakeStart');
   const pauseBtn = document.getElementById('snakePause');
   const resetBtn = document.getElementById('snakeReset');
-  const closeBtn = document.getElementById('snakeClose');
   const scoreEl = document.getElementById('snakeScore');
   const highEl = document.getElementById('snakeHigh');
 
@@ -918,14 +939,6 @@ renderChat();
 
   function resetGame(){
     startGame();
-  }
-
-  function closeGame(){
-    cancelTick();
-    running = false;
-    paused = false;
-    // optionally hide panel — if you want to hide instead, your app can add logic here
-    // document.getElementById('gamesPanel').classList.add('hidden');
   }
 
   function cancelTick(){
@@ -1047,7 +1060,6 @@ renderChat();
   startBtn.addEventListener('click', startGame);
   pauseBtn.addEventListener('click', pauseGame);
   resetBtn.addEventListener('click', resetGame);
-  closeBtn.addEventListener('click', closeGame);
 
   // Keyboard controls
   document.addEventListener('keydown', e => {
@@ -1098,7 +1110,7 @@ renderChat();
     ctx.closePath();
     ctx.fill();
   }
-  
+
   // This is used to draw the background and was missing from the original code, causing a ReferenceError.
   function roundRect(ctx, x, y, width, height, radius) {
     ctx.beginPath();
