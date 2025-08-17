@@ -1,1 +1,57 @@
 
+:root{
+  --bg:#071018; --panel:rgba(255,255,255,0.03); --accent:#7b5cff; --muted:#9fb0c8; --text:#e9f2ff;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Roboto,Arial,system-ui;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(4px)}
+h1{margin:0;font-size:1.05rem}
+.top-actions{display:flex;gap:8px}
+.btn{background:var(--accent);border:none;padding:8px 12px;border-radius:10px;color:#fff;cursor:pointer;font-weight:600;box-shadow:0 6px 18px rgba(123,92,255,0.12)}
+.btn.alt{background:#24303a}
+.layout{display:grid;grid-template-columns:240px 1fr 320px;gap:16px;padding:18px;flex:1}
+nav{background:var(--panel);padding:12px;border-radius:12px;height:calc(100vh - 120px);overflow:auto}
+nav button{display:block;width:100%;text-align:left;padding:10px;border-radius:8px;border:none;background:transparent;color:var(--text);cursor:pointer;margin-bottom:8px;font-weight:600}
+nav button.active{background:linear-gradient(90deg, rgba(123,92,255,0.14), rgba(123,92,255,0.06));}
+main{background:var(--panel);padding:14px;border-radius:12px;min-height:400px;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,0.35)}
+aside{background:var(--panel);padding:14px;border-radius:12px;height:calc(100vh - 120px);overflow:auto}
+section{display:none}
+section.active{display:block}
+.card{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;margin-bottom:12px;box-shadow:0 4px 14px rgba(0,0,0,0.2)}
+input,textarea,select{width:100%;padding:10px;border-radius:8px;border:none;background:rgba(255,255,255,0.02);color:var(--text);margin-top:8px;font-size:0.95rem}
+textarea{min-height:90px}
+.profile-pic{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.04)}
+.small{font-size:0.9rem;color:var(--muted)}
+.laps{max-height:160px;overflow:auto;padding:6px;background:rgba(255,255,255,0.02);border-radius:8px;margin-top:8px}
+footer{padding:12px;text-align:center;color:var(--muted);font-size:0.85rem}
+.modal-backdrop{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,10,0.6), rgba(2,6,10,0.6));z-index:9999}
+.auth-card{width:100%;max-width:620px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:22px;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,0.7)}
+.auth-top{display:flex;gap:12px;align-items:center}
+.auth-title{font-size:1.2rem;margin:0}
+@media(max-width:1000px){.layout{grid-template-columns:1fr;grid-auto-rows:min-content}aside{order:3;padding-bottom:60px} nav{height:auto}}
+/* messages */
+.msg-list{max-height:260px;overflow:auto;padding:8px;background:rgba(255,255,255,0.02);border-radius:8px}
+.msg{margin-bottom:8px;padding:6px;border-radius:6px;background:rgba(0,0,0,0.04)}
+/* live background preview */
+.bg-preview{width:100%;height:160px;border-radius:8px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,0.03)}
+/* small search area */
+.search-results{margin-top:10px}
+/* streaming panel */
+.stream-player-container { margin-bottom: 20px; }
+.stream-player-container h3 { margin-bottom: 8px; }
+.stream-player-container iframe {
+  width: 100%;
+  height: 315px; /* Standard YouTube embed height */
+  border-radius: 12px;
+  border: none;
+}
+/* Snake game styles */
+#gamesPanel { padding:20px; color:var(--text,#e6eef8); font-family:system-ui,-apple-system,Segoe UI,Roboto; }
+#snakeWrap { max-width:480px; margin:10px 0; background:rgba(255,255,255,0.02); padding:16px; border-radius:12px; box-shadow:0 6px 14px rgba(0,0,0,0.5); }
+#snakeHeader { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+#snakeCanvas { width:100%; height:auto; background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.55)); border-radius:8px; display:block; margin-top:12px; touch-action: none; }
+.snakeControls { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }
+.btn { padding:8px 12px; border-radius:16px; background:linear-gradient(90deg,#7a4dff,#b36bff); color:white; border:none; cursor:pointer; font-weight:600; }
+.small { padding:6px 10px; font-size:13px; border-radius:12px; }
+#snakeScore { font-weight:700; }
+#snakeInfo { opacity:0.8; font-size:13px; }
