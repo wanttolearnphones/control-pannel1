@@ -1,1259 +1,1034 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Ritters OS</title>
-<style>
-  :root {
-    /* Dark Theme (Default) */
-    --bg: #071018;
-    --panel: rgba(255, 255, 255, 0.03);
-    --accent: #7b5cff;
-    --muted: #9fb0c8;
-    --text: #e9f2ff;
-    --panel-shadow: rgba(0, 0, 0, 0.35);
-    --btn-alt-bg: #24303a;
-  }
-  .light-theme {
-    /* Light Theme */
-    --bg: #f0f4f8;
-    --panel: rgba(0, 0, 0, 0.05);
-    --accent: #5a3dcf;
-    --muted: #667e9c;
-    --text: #1d2b3c;
-    --panel-shadow: rgba(0, 0, 0, 0.1);
-    --btn-alt-bg: #e0e6ec;
-  }
-  * { box-sizing: border-box }
-  body { margin: 0; font-family: Inter, Segoe UI, Roboto, Arial, system-ui; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; transition: background 0.3s ease, color 0.3s ease; }
-  header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); backdrop-filter: blur(4px); transition: background 0.3s ease; }
-  h1 { margin: 0; font-size: 1.05rem }
-  .top-actions { display: flex; gap: 8px }
-  .btn { background: var(--accent); border: none; padding: 8px 12px; border-radius: 10px; color: #fff; cursor: pointer; font-weight: 600; box-shadow: 0 6px 18px rgba(123, 92, 255, 0.12); transition: all 0.2s ease-in-out; }
-  .btn.alt { background: var(--btn-alt-bg); box-shadow: none; }
-  .layout { display: grid; grid-template-columns: 240px 1fr 320px; gap: 16px; padding: 18px; flex: 1; }
-  nav { background: var(--panel); padding: 12px; border-radius: 12px; height: calc(100vh - 120px); overflow: auto; transition: background 0.3s ease; }
-  nav button { display: block; width: 100%; text-align: left; padding: 10px; border-radius: 8px; border: none; background: transparent; color: var(--text); cursor: pointer; margin-bottom: 8px; font-weight: 600; transition: background 0.2s ease, color 0.2s ease; }
-  nav button.active { background: linear-gradient(90deg, rgba(123, 92, 255, 0.14), rgba(123, 92, 255, 0.06)); }
-  nav button.active:hover { background: linear-gradient(90deg, rgba(123, 92, 255, 0.2), rgba(123, 92, 255, 0.08)); }
-  main { background: var(--panel); padding: 14px; border-radius: 12px; min-height: 400px; overflow: auto; box-shadow: 0 8px 30px var(--panel-shadow); transition: background 0.3s ease, box-shadow 0.3s ease; }
-  aside { background: var(--panel); padding: 14px; border-radius: 12px; height: calc(100vh - 120px); overflow: auto; transition: background 0.3s ease; }
-  section { display: none }
-  section.active { display: block }
-  .card { background: rgba(255, 255, 255, 0.02); padding: 12px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2); transition: background 0.3s ease, box-shadow 0.3s ease; }
-  .light-theme .card { background: rgba(0, 0, 0, 0.02); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1); }
-  input,textarea,select { width: 100%; padding: 10px; border-radius: 8px; border: none; background: rgba(255, 255, 255, 0.02); color: var(--text); margin-top: 8px; font-size: 0.95rem; transition: background 0.3s ease, color 0.3s ease; }
-  .light-theme input, .light-theme textarea, .light-theme select { background: rgba(0, 0, 0, 0.04); }
-  textarea { min-height: 90px }
-  .profile-pic { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255, 255, 255, 0.04); }
-  .small { font-size: 0.9rem; color: var(--muted); }
-  .laps { max-height: 160px; overflow: auto; padding: 6px; background: rgba(255, 255, 255, 0.02); border-radius: 8px; margin-top: 8px; }
-  footer { padding: 12px; text-align: center; color: var(--muted); font-size: 0.85rem; }
-  .modal-backdrop { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(rgba(2, 6, 10, 0.6), rgba(2, 6, 10, 0.6)); z-index: 9999; }
-  .auth-card { width: 100%; max-width: 620px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01)); padding: 22px; border-radius: 14px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7); }
-  .auth-top { display: flex; gap: 12px; align-items: center }
-  .auth-title { font-size: 1.2rem; margin: 0 }
-  @media(max-width:1000px){ .layout{ grid-template-columns: 1fr; grid-auto-rows: min-content } aside{ order: 3; padding-bottom: 60px } nav{ height: auto } }
-  .msg-list { max-height: 260px; overflow: auto; padding: 8px; background: rgba(255, 255, 255, 0.02); border-radius: 8px; }
-  .msg { margin-bottom: 8px; padding: 6px; border-radius: 6px; background: rgba(0, 0, 0, 0.04); }
-  .bg-preview { width: 100%; height: 160px; border-radius: 8px; background-size: cover; background-position: center; border: 1px solid rgba(255, 255, 255, 0.03); }
-  .search-results { margin-top: 10px }
-</style>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
+<!doctype html>
 
-<header>
-  <div style="display:flex;gap:12px;align-items:center">
-    <h1>Ritters Control Panel — Full Demo</h1>
-    <div id="welcomeText" class="small">Please sign up or log in (Demo available)</div>
-  </div>
-  <div class="top-actions">
-    <button class="btn" id="themeToggle">Toggle Theme</button>
-    <button class="btn alt" id="logoutBtn" style="display:none">Logout</button>
-  </div>
-</header>
+<html lang="en">  
+<head>  
+<meta charset="utf-8" />  
+<meta name="viewport" content="width=device-width,initial-scale=1" />  
+<title>Ritters OS — Full Demo</title>  
+<style>  
+  :root{  
+    --bg:#071018; --panel:rgba(255,255,255,0.03); --accent:#7b5cff; --muted:#9fb0c8; --text:#e9f2ff;  
+  }  
+  *{box-sizing:border-box}  
+  body{margin:0;font-family:Inter,Segoe UI,Roboto,Arial,system-ui;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}  
+  header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(4px)}  
+  h1{margin:0;font-size:1.05rem}  
+  .top-actions{display:flex;gap:8px}  
+  .btn{background:var(--accent);border:none;padding:8px 12px;border-radius:10px;color:#fff;cursor:pointer;font-weight:600;box-shadow:0 6px 18px rgba(123,92,255,0.12)}  
+  .btn.alt{background:#24303a}  
+  .layout{display:grid;grid-template-columns:240px 1fr 320px;gap:16px;padding:18px;flex:1}  
+  nav{background:var(--panel);padding:12px;border-radius:12px;height:calc(100vh - 120px);overflow:auto}  
+  nav button{display:block;width:100%;text-align:left;padding:10px;border-radius:8px;border:none;background:transparent;color:var(--text);cursor:pointer;margin-bottom:8px;font-weight:600}  
+  nav button.active{background:linear-gradient(90deg, rgba(123,92,255,0.14), rgba(123,92,255,0.06));}  
+  main{background:var(--panel);padding:14px;border-radius:12px;min-height:400px;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,0.35)}  
+  aside{background:var(--panel);padding:14px;border-radius:12px;height:calc(100vh - 120px);overflow:auto}  
+  section{display:none}  
+  section.active{display:block}  
+  .card{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;margin-bottom:12px;box-shadow:0 4px 14px rgba(0,0,0,0.2)}  
+  input,textarea,select{width:100%;padding:10px;border-radius:8px;border:none;background:rgba(255,255,255,0.02);color:var(--text);margin-top:8px;font-size:0.95rem}  
+  textarea{min-height:90px}  
+  .profile-pic{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.04)}  
+  .small{font-size:0.9rem;color:var(--muted)}  
+  .laps{max-height:160px;overflow:auto;padding:6px;background:rgba(255,255,255,0.02);border-radius:8px;margin-top:8px}  
+  footer{padding:12px;text-align:center;color:var(--muted);font-size:0.85rem}  
+  .modal-backdrop{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,10,0.6), rgba(2,6,10,0.6));z-index:9999}  
+  .auth-card{width:100%;max-width:620px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:22px;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,0.7)}  
+  .auth-top{display:flex;gap:12px;align-items:center}  
+  .auth-title{font-size:1.2rem;margin:0}  
+  @media(max-width:1000px){.layout{grid-template-columns:1fr;grid-auto-rows:min-content}aside{order:3;padding-bottom:60px} nav{height:auto}}  
+  /* messages */  
+  .msg-list{max-height:260px;overflow:auto;padding:8px;background:rgba(255,255,255,0.02);border-radius:8px}  
+  .msg{margin-bottom:8px;padding:6px;border-radius:6px;background:rgba(0,0,0,0.04)}  
+  /* live background preview */  
+  .bg-preview{width:100%;height:160px;border-radius:8px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,0.03)}  
+  /* small search area */  
+  .search-results{margin-top:10px}  
+</style>  
+</head>  
+<body>  <header>  
+  <div style="display:flex;gap:12px;align-items:center">  
+    <h1>Ritters Control Panel — Full Demo</h1>  
+    <div id="welcomeText" class="small">Please sign up or log in (Demo available)</div>  
+  </div>  
+  <div class="top-actions">  
+    <button class="btn" id="themeToggle">Toggle Theme</button>  
+    <button class="btn alt" id="logoutBtn" style="display:none">Logout</button>  
+  </div>  
+</header>  <div class="layout">  
+  <nav id="nav">  
+    <button data-tab="dashboard" class="active">Dashboard</button>  
+    <button data-tab="journal">Journal</button>  
+    <button data-tab="notes">Notes</button>  
+    <button data-tab="calendar">Calendar</button>  
+    <button data-tab="stopwatch">Stopwatch</button>  
+    <button data-tab="music">Music</button>  
+    <button data-tab="mood">Mood Tracker</button>  
+    <button data-tab="weather">Weather</button>  
+    <button data-tab="search">Search</button>  
+    <button data-tab="messages">Messages</button>  
+    <button data-tab="backgrounds">Backgrounds</button>  
+    <button data-tab="profile">Profile</button>  
+  </nav>  
+  <main>  
+    <!-- Dashboard -->  
+    <section id="tab-dashboard" class="active">  
+      <h2>Dashboard</h2>  
+      <div style="display:flex;gap:12px;flex-wrap:wrap">  
+        <div style="flex:1" class="card">  
+          <h3 class="small">Quick Tools</h3>  
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">  
+            <button class="btn" onclick="navTo('stopwatch')">Open Stopwatch</button>  
+            <button class="btn" onclick="navTo('music')">Open Music</button>  
+            <button class="btn" onclick="navTo('weather')">Open Weather</button>  
+            <button class="btn" onclick="navTo('search')">Open Search</button>  
+            <button class="btn" onclick="navTo('messages')">Open Messages</button>  
+          </div>  
+        </div>  
+        <div style="width:320px" class="card">  
+          <h3 class="small">Stats</h3>  
+          <div id="statsArea"></div>  
+        </div>  
+      </div>  
+    </section>  <!-- Journal -->  
+<section id="tab-journal">  
+  <h2>Journal</h2>  
+  <input id="journalTitle" placeholder="Title">  
+  <textarea id="journalBody" rows="6" placeholder="Write..."></textarea>  
+  <div style="display:flex;gap:8px;margin-top:8px">  
+    <button class="btn" id="saveJournalBtn">Save Entry</button>  
+    <button class="btn alt" id="clearJournalBtn">Clear All</button>  
+  </div>  
+  <h3 style="margin-top:12px">Entries</h3>  
+  <div id="journalList"></div>  
+</section>  
 
-<div class="layout">
-  <nav id="nav">
-    <button data-tab="dashboard" class="active">Dashboard</button>
-    <button data-tab="journal">Journal</button>
-    <button data-tab="notes">Notes</button>
-    <button data-tab="calendar">Calendar</button>
-    <button data-tab="stopwatch">Stopwatch</button>
-    <button data-tab="music">Music</button>
-    <button data-tab="mood">Mood Tracker</button>
-    <button data-tab="weather">Weather</button>
-    <button data-tab="search">Search</button>
-    <button data-tab="messages">Messages</button>
-    <button data-tab="backgrounds">Backgrounds</button>
-    <button data-tab="profile">Profile</button>
-  </nav>
-  <main>
-    <section id="tab-dashboard" class="active">
-      <h2>Dashboard</h2>
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <div style="flex:1" class="card">
-          <h3 class="small">Quick Tools</h3>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-            <button class="btn" onclick="navTo('stopwatch')">Open Stopwatch</button>
-            <button class="btn" onclick="navTo('music')">Open Music</button>
-            <button class="btn" onclick="navTo('weather')">Open Weather</button>
-            <button class="btn" onclick="navTo('search')">Open Search</button>
-            <button class="btn" onclick="navTo('messages')">Open Messages</button>
-          </div>
-        </div>
-        <div style="width:320px" class="card">
-          <h3 class="small">Stats</h3>
-          <div id="statsArea"></div>
-        </div>
-      </div>
-    </section>
+<!-- Notes -->  
+<section id="tab-notes">  
+  <h2>Notes</h2>  
+  <input id="noteTitle" placeholder="Note title">  
+  <textarea id="noteBody" rows="4" placeholder="Your note..."></textarea>  
+  <div style="display:flex;gap:8px;margin-top:8px">  
+    <button class="btn" id="saveNoteBtn">Save Note</button>  
+    <button class="btn alt" id="clearNotesBtn">Clear All</button>  
+  </div>  
+  <h3 style="margin-top:12px">Saved Notes</h3>  
+  <div id="notesList"></div>  
+</section>  
 
-    <section id="tab-journal">
-      <h2>Journal</h2>
-      <input id="journalTitle" placeholder="Title">
-      <textarea id="journalBody" rows="6" placeholder="Write..."></textarea>
-      <input type="hidden" id="journalId">
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button class="btn" id="saveJournalBtn">Save Entry</button>
-        <button class="btn alt" id="clearJournalBtn">Clear All</button>
-      </div>
-      <h3 style="margin-top:12px">Entries</h3>
-      <div id="journalList"></div>
-    </section>
+<!-- Calendar -->  
+<section id="tab-calendar">  
+  <h2>Calendar</h2>  
+  <div style="display:flex;gap:8px;flex-wrap:wrap">  
+    <input type="date" id="eventDate">  
+    <input id="eventTitle" placeholder="Event title">  
+    <button class="btn" id="saveEventBtn">Add Event</button>  
+  </div>  
+  <div style="margin-top:12px" id="calendarEventsList"></div>  
+</section>  
 
-    <section id="tab-notes">
-      <h2>Notes</h2>
-      <input id="noteTitle" placeholder="Note title">
-      <textarea id="noteBody" rows="4" placeholder="Your note..."></textarea>
-      <input type="hidden" id="noteId">
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button class="btn" id="saveNoteBtn">Save Note</button>
-        <button class="btn alt" id="clearNotesBtn">Clear All</button>
-      </div>
-      <h3 style="margin-top:12px">Saved Notes</h3>
-      <div id="notesList"></div>
-    </section>
+<!-- Stopwatch -->  
+<section id="tab-stopwatch">  
+  <h2>Stopwatch</h2>  
+  <div id="stopwatchDisplay" style="font-weight:700;font-size:1.4rem">00:00:00.000</div>  
+  <div style="display:flex;gap:8px;margin-top:8px">  
+    <button class="btn" id="startSW">Start</button>  
+    <button class="btn alt" id="stopSW">Stop</button>  
+    <button class="btn" id="resetSW">Reset</button>  
+    <button class="btn alt" id="lapSW">Lap</button>  
+  </div>  
+  <h4 style="margin-top:12px">Laps</h4>  
+  <div class="laps" id="lapsContainer"></div>  
+</section>  
 
-    <section id="tab-calendar">
-      <h2>Calendar</h2>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <input type="date" id="eventDate">
-        <input id="eventTitle" placeholder="Event title">
-        <button class="btn" id="saveEventBtn">Add Event</button>
-      </div>
-      <div style="margin-top:12px" id="calendarEventsList"></div>
-    </section>
+<!-- Music -->  
+<section id="tab-music">  
+  <h2>Music Player</h2>  
+  <div style="display:flex;gap:8px;align-items:center">  
+    <input id="musicFile" type="file" accept="audio/*">  
+    <button class="btn" id="playFileBtn">Load & Play</button>  
+  </div>  
+  <audio id="musicPlayer" controls style="margin-top:12px;width:100%"></audio>  
+</section>  
 
-    <section id="tab-stopwatch">
-      <h2>Stopwatch</h2>
-      <div id="stopwatchDisplay" style="font-weight:700;font-size:1.4rem">00:00:00.000</div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button class="btn" id="startSW">Start</button>
-        <button class="btn alt" id="stopSW">Stop</button>
-        <button class="btn" id="resetSW">Reset</button>
-        <button class="btn alt" id="lapSW">Lap</button>
-      </div>
-      <h4 style="margin-top:12px">Laps</h4>
-      <div class="laps" id="lapsContainer"></div>
-    </section>
+<!-- Mood -->  
+<section id="tab-mood">  
+  <h2>Mood Tracker</h2>  
+  <div style="display:flex;gap:8px;flex-wrap:wrap">  
+    <select id="moodSelect">  
+      <option value="😁">😁 Happy</option>  
+      <option value="🙂">🙂 Fine</option>  
+      <option value="😐">😐 Meh</option>  
+      <option value="😔">😔 Sad</option>  
+      <option value="😡">😠 Angry</option>  
+      <option value="😴">😴 Tired</option>  
+    </select>  
+    <input id="moodNote" placeholder="Optional note...">  
+    <button class="btn" id="saveMoodBtn">Save Mood</button>  
+  </div>  
+  <h4 style="margin-top:12px">Mood History</h4>  
+  <div id="moodHistory"></div>  
+</section>  
 
-    <section id="tab-music">
-      <h2>Music Player</h2>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="musicFile" type="file" accept="audio/*">
-        <button class="btn" id="playFileBtn">Load & Play</button>
-      </div>
-      <audio id="musicPlayer" controls style="margin-top:12px;width:100%"></audio>
-    </section>
+<!-- Weather -->  
+<section id="tab-weather">  
+  <h2>Weather</h2>  
+  <div style="display:flex;gap:8px;flex-wrap:wrap">  
+    <input id="weatherCity" placeholder="City (e.g. London, GB)">  
+    <button class="btn" id="weatherSearchBtn">Search</button>  
+    <button class="btn alt" id="weatherDetectBtn">Use My Location</button>  
+  </div>  
+  <div style="margin-top:12px" id="weatherResult"></div>  
+</section>  
 
-    <section id="tab-mood">
-      <h2>Mood Tracker</h2>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <select id="moodSelect">
-          <option value="😁">😁 Happy</option>
-          <option value="🙂">🙂 Fine</option>
-          <option value="😐">😐 Meh</option>
-          <option value="😔">😔 Sad</option>
-          <option value="😡">😠 Angry</option>
-          <option value="😴">😴 Tired</option>
-        </select>
-        <input id="moodNote" placeholder="Optional note...">
-        <button class="btn" id="saveMoodBtn">Save Mood</button>
-      </div>
-      <div class="card" style="margin-top:12px">
-        <h4 style="margin-top:0">Mood History Chart</h4>
-        <canvas id="moodChart" width="100%" height="200"></canvas>
-      </div>
-      <h4 style="margin-top:12px">Mood History List</h4>
-      <div id="moodHistory"></div>
-    </section>
+<!-- Search -->  
+<section id="tab-search">  
+  <h2>Search</h2>  
+  <div style="display:flex;gap:8px;align-items:center">  
+    <input id="searchQuery" placeholder="Search the web or ask a quick question..." onkeydown="if(event.key==='Enter') performSearch()">  
+    <button class="btn" id="doSearchBtn">Search</button>  
+    <button class="btn alt" id="openSearchInNewTab">Open in Google</button>  
+  </div>  
+  <div class="card">  
+    <div class="small">Quick Answer</div>  
+    <div id="searchQuick" class="search-results small">No query yet.</div>  
+  </div>  
+  <div class="card">  
+    <div class="small">Results</div>  
+    <div id="searchResults" class="search-results"></div>  
+  </div>  
+</section>  
 
-    <section id="tab-weather">
-      <h2>Weather</h2>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <input id="weatherCity" placeholder="City (e.g. London, GB)">
-        <button class="btn" id="weatherSearchBtn">Search</button>
-        <button class="btn alt" id="weatherDetectBtn">Use My Location</button>
-      </div>
-      <div style="margin-top:12px" id="weatherResult"></div>
-    </section>
+<!-- Messages -->  
+<section id="tab-messages">  
+  <h2>Messages (Demo Room)</h2>  
+  <div class="card">  
+    <div class="small">Public chat (stored locally)</div>  
+    <div id="msgList" class="msg-list"></div>  
+    <div style="display:flex;gap:8px;margin-top:8px">  
+      <input id="msgText" placeholder="Write a message..." onkeydown="if(event.key==='Enter') sendMessage()">  
+      <button class="btn" id="sendMsgBtn">Send</button>  
+    </div>  
+    <div class="small" style="margin-top:8px">This is a demo chat stored in your browser's localStorage. It works across tabs in the same browser profile.</div>  
+  </div>  
+</section>  
 
-    <section id="tab-search">
-      <h2>Search</h2>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="searchQuery" placeholder="Search the web or ask a quick question..." onkeydown="if(event.key==='Enter') performSearch()">
-        <button class="btn" id="doSearchBtn">Search</button>
-        <button class="btn alt" id="openSearchInNewTab">Open in Google</button>
-      </div>
-      <div class="card">
-        <div class="small">Quick Answer</div>
-        <div id="searchQuick" class="search-results small">No query yet.</div>
-      </div>
-      <div class="card">
-        <div class="small">Results</div>
-        <div id="searchResults" class="search-results"></div>
-      </div>
-    </section>
+<!-- Backgrounds -->  
+<section id="tab-backgrounds">  
+  <h2>Live Backgrounds</h2>  
+  <div class="card">  
+    <div class="small">Choose a background</div>  
+    <select id="bgSelect">  
+      <option value="gradient">Gradient (default)</option>  
+      <option value="space">Space image</option>  
+      <option value="nature">Nature image</option>  
+      <option value="video">Animated video</option>  
+      <option value="solid">Solid color</option>  
+    </select>  
+    <div id="bgPreview" class="bg-preview" style="margin-top:10px"></div>  
+    <div style="display:flex;gap:8px;margin-top:8px">  
+      <button class="btn" id="bgApplyBtn">Apply & Save</button>  
+      <button class="btn alt" id="bgClearBtn">Clear</button>  
+    </div>  
+  </div>  
+</section>  
 
-    <section id="tab-messages">
-      <h2>Messages (Demo Room)</h2>
-      <div class="card">
-        <div class="small">Public chat (stored locally)</div>
-        <div id="msgList" class="msg-list"></div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <input id="msgText" placeholder="Write a message..." onkeydown="if(event.key==='Enter') sendMessage()">
-          <button class="btn" id="sendMsgBtn">Send</button>
-        </div>
-        <div class="small" style="margin-top:8px">This is a demo chat stored in your browser's localStorage. It works across tabs in the same browser profile.</div>
-      </div>
-    </section>
+<!-- Profile -->  
+<section id="tab-profile">  
+  <h2>Profile</h2>  
+  <div style="display:flex;gap:12px;align-items:center">  
+    <img id="profilePic" class="profile-pic" src="" alt="pic">  
+    <div style="flex:1">  
+      <div class="small">Username</div>  
+      <div id="profileName" style="font-weight:700"></div>  
+      <div class="small" id="profileJoined"></div>  
+    </div>  
+  </div>  
+  <div style="margin-top:12px">  
+    <input id="editBio" placeholder="Bio">  
+    <input id="editPic" type="file" accept="image/*">  
+    <div style="display:flex;gap:8px;margin-top:8px">  
+      <button class="btn" id="saveProfileBtn">Save Profile</button>  
+      <button class="btn alt" id="deleteAccountBtn">Delete Account</button>  
+    </div>  
+  </div>  
+  <h3 style="margin-top:12px">Your Stats</h3>  
+  <div id="profileStats"></div>  
+</section>
 
-    <section id="tab-backgrounds">
-      <h2>Live Backgrounds</h2>
-      <div class="card">
-        <div class="small">Choose a background</div>
-        <select id="bgSelect">
-          <option value="gradient">Gradient (default)</option>
-          <option value="space">Space image</option>
-          <option value="nature">Nature image</option>
-          <option value="video">Animated video</option>
-          <option value="solid">Solid color</option>
-        </select>
-        <div id="bgPreview" class="bg-preview" style="margin-top:10px"></div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button class="btn" id="bgApplyBtn">Apply & Save</button>
-          <button class="btn alt" id="bgClearBtn">Clear</button>
-        </div>
-      </div>
-    </section>
+  </main>    <aside>  
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">  
+      <img id="asidePic" class="profile-pic" src="">  
+      <div>  
+        <div id="asideName" style="font-weight:700"></div>  
+        <div class="small" id="asideBio"></div>  
+      </div>  
+    </div>  <div class="card">  
+  <div class="small">Quick Weather</div>  
+  <div id="asideWeather" style="margin-top:8px">—</div>  
+</div>  
 
-    <section id="tab-profile">
-      <h2>Profile</h2>
-      <div style="display:flex;gap:12px;align-items:center">
-        <img id="profilePic" class="profile-pic" src="" alt="pic">
-        <div style="flex:1">
-          <div class="small">Username</div>
-          <div id="profileName" style="font-weight:700"></div>
-          <div class="small" id="profileJoined"></div>
-        </div>
-      </div>
-      <div style="margin-top:12px">
-        <input id="editBio" placeholder="Bio">
-        <input id="editPic" type="file" accept="image/*">
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button class="btn" id="saveProfileBtn">Save Profile</button>
-          <button class="btn alt" id="deleteAccountBtn">Delete Account</button>
-        </div>
-      </div>
-      <h3 style="margin-top:12px">Your Stats</h3>
-      <div id="profileStats"></div>
-    </section>
-  </main>
-
-  <aside>
-    <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
-      <img id="asidePic" class="profile-pic" src="">
-      <div>
-        <div id="asideName" style="font-weight:700"></div>
-        <div class="small" id="asideBio"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="small">Quick Weather</div>
-      <div id="asideWeather" style="margin-top:8px">—</div>
-    </div>
-
-    <div class="card">
-      <div class="small">Session</div>
-      <div style="margin-top:8px">
-        <div id="currentUserLabel"></div>
-        <button class="btn alt" id="logoutBtnAside" style="margin-top:8px">Logout</button>
-      </div>
-    </div>
-  </aside>
+<div class="card">  
+  <div class="small">Session</div>  
+  <div style="margin-top:8px">  
+    <div id="currentUserLabel"></div>  
+    <button class="btn alt" id="logoutBtnAside" style="margin-top:8px">Logout</button>  
+  </div>  
 </div>
 
-<footer>Ritters Control Panel • Demo — Local data only</footer>
+  </aside>  
+</div>  <footer>Ritters Control Panel • Demo — Local data only</footer>  <!-- AUTH modal -->  <div id="authModal" class="modal-backdrop" style="display:none">  
+  <div class="auth-card">  
+    <div class="auth-top">  
+      <img id="authPreview" class="profile-pic" src="">  
+      <div style="flex:1">  
+        <h2 class="auth-title" id="authTitle">Welcome</h2>  
+        <div class="small" id="authSubtitle">Sign up or log in to continue</div>  
+      </div>  
+    </div>  
+    <div style="margin-top:14px">  
+      <input id="authUser" placeholder="Username (no spaces)" autocomplete="username" />  
+      <input id="authPass" placeholder="Password" type="password" autocomplete="current-password" />  
+      <input id="authBio" placeholder="Short bio (optional)" />  
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">  
+        <input id="authPic" type="file" accept="image/*" />  
+        <button id="previewClear" class="btn alt">Clear Pic</button>  
+      </div>  
+      <div style="display:flex;gap:10px;margin-top:12px">  
+        <button id="signupBtn" class="btn">Sign Up</button>  
+        <button id="loginBtn" class="btn alt">Login</button>  
+        <button id="demoBtn" class="btn" title="create a demo user (empty)">Demo</button>  
+      </div>  
+      <div style="display:flex;gap:8px;margin-top:10px">  
+        <button id="closeAuth" class="btn alt">Close (if logged in)</button>  
+        <button id="forgotBtn" class="btn" title="Not secure — local-only">Forgot pw?</button>  
+      </div>  
+      <div id="authMessage" class="small" style="margin-top:12px;color:#f7c6c6"></div>  
+    </div>  
+  </div>  
+</div>  <script>  
+/* ---------------------------  
+   Ritters OS — Full Demo (single file)  
+   - Demo messages (localStorage)  
+   - Live backgrounds saved  
+   - All apps working locally  
+--------------------------- */  
+  
+/* CONFIG */  
+const USERS_KEY = 'ritters_users';  
+const CURRENT_USER_KEY = 'ritters_currentUser';  
+const WEATHER_API_KEY = 'bc35dc734bb6fb3c973c5c4de9d0c0e2'; // your existing key  
+  
+/* UTIL */  
+const $ = id => document.getElementById(id);  
+function loadUsers(){ return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); }  
+function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }  
+function ukey(k){ return `${currentUser}::${k}`; }  
+function userGet(k, fallback){ try { return JSON.parse(localStorage.getItem(ukey(k)) || JSON.stringify(fallback)); } catch(e){ return fallback; } }  
+function userSet(k, value){ localStorage.setItem(ukey(k), JSON.stringify(value)); }  
+  
+/* HASH password using SubtleCrypto SHA-256 -> hex */  
+async function hashPassword(pw){  
+  const enc = new TextEncoder();  
+  const buf = await crypto.subtle.digest('SHA-256', enc.encode(pw));  
+  const arr = Array.from(new Uint8Array(buf));  
+  return arr.map(b => b.toString(16).padStart(2,'0')).join('');  
+}  
+  
+/* AUTH */  
+const authModal = $('authModal'), authUser = $('authUser'), authPass = $('authPass'), authBio = $('authBio'), authPic = $('authPic');  
+const authPreview = $('authPreview'), authMessage = $('authMessage');  
+$('previewClear').addEventListener('click', ()=> { authPreview.src = ''; authPic.value = ''; });  
+authPic.addEventListener('change', (e)=>{ const f=e.target.files[0]; if(!f){authPreview.src='';return;} const r=new FileReader(); r.onload = ()=> authPreview.src = r.result; r.readAsDataURL(f); });  
+function showAuth(msg=''){ authMessage.textContent = msg; authModal.style.display = 'flex'; }  
+function hideAuth(){ authModal.style.display = 'none'; authMessage.textContent = ''; }  
+  
+/* current user */  
+let currentUser = localStorage.getItem(CURRENT_USER_KEY) || null;  
+  
+/* nav */  
+const navButtons = document.querySelectorAll('nav button');  
+const sections = document.querySelectorAll('main section');  
+function setActiveTab(tab){  
+  navButtons.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));  
+  sections.forEach(s => s.id === `tab-${tab}` ? s.classList.add('active') : s.classList.remove('active'));  
+  window.scrollTo({top:0, behavior:'smooth'});  
+}  
+navButtons.forEach(b => b.addEventListener('click', ()=> setActiveTab(b.dataset.tab)));  
+function navTo(t){ setActiveTab(t); }  
+  
+/* logout */  
+function logout(){  
+  localStorage.removeItem(CURRENT_USER_KEY);  
+  currentUser = null;  
+  showAuth('Signed out. Please sign in.');  
+  renderSignedOutUI();  
+}  
+$('logoutBtn').addEventListener('click', logout);  
+$('logoutBtnAside')?.addEventListener('click', logout);  
+  
+/* theme toggle */  
+$('themeToggle').addEventListener('click', ()=>{  
+  const curBg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();  
+  if(curBg === '#fff'){ document.documentElement.style.setProperty('--bg','#071018'); document.documentElement.style.setProperty('--text','#e9f2ff'); }  
+  else { document.documentElement.style.setProperty('--bg','#fff'); document.documentElement.style.setProperty('--text','#111'); }  
+});  
+  
+/* auth actions */  
+$('signupBtn').addEventListener('click', async ()=>{  
+  const name = authUser.value.trim(); const pw = authPass.value;  
+  if(!name||!pw){ authMessage.textContent='Username and password required.'; return; }  
+  if(/\s/.test(name)){ authMessage.textContent='No spaces allowed in username.'; return; }  
+  const users = loadUsers();  
+  if(users[name]){ authMessage.textContent='Username taken.'; return; }  
+  const hash = await hashPassword(pw);  
+  users[name] = { passwordHash: hash, bio: authBio.value||'', pic: authPreview.src||'', joined: new Date().toISOString() };  
+  saveUsers(users);  
+  localStorage.setItem(CURRENT_USER_KEY, name);  
+  initForUser();  
+  hideAuth();  
+});  
+$('loginBtn').addEventListener('click', async ()=>{  
+  const name = authUser.value.trim(), pw = authPass.value;  
+  if(!name||!pw){ authMessage.textContent='Username and password required.'; return; }  
+  const users = loadUsers();  
+  if(!users[name]){ authMessage.textContent='No such user.'; return; }  
+  const hash = await hashPassword(pw);  
+  if(hash !== users[name].passwordHash){ authMessage.textContent='Invalid credentials.'; return; }  
+  localStorage.setItem(CURRENT_USER_KEY, name);  
+  initForUser();  
+  hideAuth();  
+});  
+$('demoBtn').addEventListener('click', ()=>{  
+  const users = loadUsers();  
+  if(!users.demo){ users.demo = { passwordHash: '', bio:'Demo user', pic:'', joined:new Date().toISOString() }; saveUsers(users); }  
+  localStorage.setItem(CURRENT_USER_KEY, 'demo');  
+  initForUser(); hideAuth();  
+});  
+$('closeAuth').addEventListener('click', ()=> { if(!currentUser) return; hideAuth(); });  
+$('forgotBtn').addEventListener('click', ()=> { alert('No server reset — this is local-only. Create a new account if needed.'); });  
+  
+/* signed out/in UI */  
+function renderSignedOutUI(){  
+  $('welcomeText').textContent = 'Please sign in';  
+  $('logoutBtn').style.display = 'none';  
+  $('currentUserLabel').textContent = '';  
+  $('asideName').textContent = '';  
+  $('asideBio').textContent = '';  
+  $('asidePic').src = '';  
+  $('profilePic').src = '';  
+  $('profileName').textContent = '';  
+  $('profileJoined').textContent = '';  
+  $('profileStats').innerHTML = '';  
+}  
+function renderSignedInUI(userObj){  
+  $('welcomeText').textContent = `Welcome, ${currentUser}`;  
+  $('logoutBtn').style.display = 'inline-block';  
+  $('currentUserLabel').textContent = currentUser;  
+  $('asideName').textContent = currentUser;  
+  $('asideBio').textContent = userObj.bio || '';  
+  $('asidePic').src = userObj.pic || '';  
+  $('profilePic').src = userObj.pic || '';  
+  $('profileName').textContent = currentUser;  
+  $('profileJoined').textContent = 'Joined: ' + new Date(userObj.joined).toLocaleDateString();  
+}  
+  
+/* init after login */  
+function initForUser(){  
+  currentUser = localStorage.getItem(CURRENT_USER_KEY);  
+  const users = loadUsers();  
+  const me = users[currentUser] || { bio:'', pic:'', joined:new Date().toISOString(), passwordHash:'' };  
+  renderSignedInUI(me);  
+  renderAllUserData();  
+  hideAuth();  
+}  
+  
+/* show auth if no user */  
+if(!currentUser){ showAuth(); renderSignedOutUI(); } else { initForUser(); }  
+  
+/* ------------------ Journal ------------------ */  
+function renderJournalList(){  
+  const list = userGet('journal', []);  
+  $('journalList').innerHTML = list.map(item => `  
+    <div class="card">  
+      <div style="display:flex;justify-content:space-between">  
+        <strong>${escapeHtml(item.title) || '(no title)'}</strong>  
+        <small class="small">${new Date(item.created).toLocaleString()}</small>  
+      </div>  
+      <div style="margin-top:8px">${escapeHtml(item.body||'').replace(/\n/g,'<br>')}</div>  
+      <div style="margin-top:8px"><button class="btn alt" onclick="deleteJournal(${item.id})">Delete</button></div>  
+    </div>  
+  `).join('');  
+}  
+window.deleteJournal = function(id){  
+  if(!currentUser){ alert('Log in first'); return; }  
+  let arr = userGet('journal', []);  
+  arr = arr.filter(i => i.id !== id);  
+  userSet('journal', arr); renderJournalList(); renderStats();  
+};  
+$('saveJournalBtn').addEventListener('click', ()=>{  
+  if(!currentUser){ alert('Log in first'); return; }  
+  const title = $('journalTitle').value.trim(), body = $('journalBody').value.trim();  
+  if(!title && !body){ alert('Write something'); return; }  
+  const arr = userGet('journal', []); arr.unshift({ id: Date.now(), title, body, created: new Date().toISOString() });  
+  userSet('journal', arr);  
+  $('journalTitle').value=''; $('journalBody').value='';  
+  renderJournalList(); renderStats();  
+});  
+$('clearJournalBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(confirm('Clear all journal entries?')){ userSet('journal', []); renderJournalList(); renderStats(); } });  
+  
+/* ------------------ Notes ------------------ */  
+function renderNotesList(){  
+  const arr = userGet('notes', []);  
+  $('notesList').innerHTML = arr.map(n => `  
+    <div class="card">  
+      <div style="display:flex;justify-content:space-between"><strong>${escapeHtml(n.t)||'(no title)'}</strong><small class="small">${new Date(n.created).toLocaleString()}</small></div>  
+      <div style="margin-top:8px">${escapeHtml(n.b||'').replace(/\n/g,'<br>')}</div>  
+      <div style="margin-top:8px"><button class="btn alt" onclick="deleteNote(${n.id})">Delete</button></div>  
+    </div>  
+  `).join('');  
+}  
+window.deleteNote = function(id){  
+  if(!currentUser) return alert('Log in first');  
+  let arr = userGet('notes', []);  
+  arr = arr.filter(n => n.id !== id);  
+  userSet('notes', arr); renderNotesList(); renderStats();  
+};  
+$('saveNoteBtn').addEventListener('click', ()=>{  
+  if(!currentUser) return alert('Log in first');  
+  const t = $('noteTitle').value.trim(), b = $('noteBody').value.trim();  
+  if(!t && !b) return alert('Write a note.');  
+  const arr = userGet('notes', []); arr.unshift({ id: Date.now(), t, b, created: new Date().toISOString() });  
+  userSet('notes', arr);  
+  $('noteTitle').value=''; $('noteBody').value='';  
+  renderNotesList(); renderStats();  
+});  
+$('clearNotesBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(confirm('Clear all notes?')){ userSet('notes', []); renderNotesList(); renderStats(); } });  
+  
+/* ------------------ Calendar ------------------ */  
+function renderEvents(){  
+  const events = userGet('events', {});  
+  const keys = Object.keys(events).sort();  
+  $('calendarEventsList').innerHTML = keys.map(d => `  
+    <div class="card"><div style="display:flex;justify-content:space-between"><strong>${d}</strong><small class="small">${events[d].length} event(s)</small></div>  
+    <div style="margin-top:8px">${events[d].map(ev => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,0.01)">${escapeHtml(ev.title)}<button class="btn alt" onclick="deleteEvent('${d}',${ev.id})">Delete</button></div>`).join('')}</div></div>  
+  `).join('');  
+}  
+$('saveEventBtn').addEventListener('click', ()=>{  
+  if(!currentUser) return alert('Log in first');  
+  const date = $('eventDate').value, title = $('eventTitle').value.trim();  
+  if(!date || !title) return alert('Pick date and title');  
+  const events = userGet('events', {}); if(!events[date]) events[date]=[]; events[date].push({ id: Date.now(), title }); userSet('events', events);  
+  $('eventDate').value=''; $('eventTitle').value=''; renderEvents(); renderStats();  
+});  
+window.deleteEvent = function(date,id){  
+  if(!currentUser) return alert('Log in first');  
+  const events = userGet('events', {}); if(!events[date]) return; events[date] = events[date].filter(e=> e.id !== id); if(events[date].length===0) delete events[date]; userSet('events', events); renderEvents(); renderStats();  
+};  
+  
+/* ------------------ Stopwatch ------------------ */  
+let swInterval = null, swStart = 0, swElapsed = 0, swRunning = false;  
+function swFormat(ms){  
+  const hours = Math.floor(ms/3600000);  
+  const mins = Math.floor(ms%3600000/60000);  
+  const secs = Math.floor(ms%60000/1000);  
+  const msecs = ms%1000;  
+  return `${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}.${String(msecs).padStart(3,'0')}`;  
+}  
+function swUpdate(){ const now = Date.now(); const diff = (swRunning ? now - swStart + swElapsed : swElapsed); $('stopwatchDisplay').textContent = swFormat(diff); }  
+$('startSW').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(swRunning) return; swStart = Date.now(); swRunning = true; swInterval = setInterval(swUpdate, 40); });  
+$('stopSW').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(!swRunning) return; clearInterval(swInterval); swElapsed += Date.now() - swStart; swRunning = false; swUpdate(); persistStopwatch(); });  
+$('resetSW').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(confirm('Reset stopwatch?')){ clearInterval(swInterval); swStart=0; swElapsed=0; swRunning=false; $('stopwatchDisplay').textContent='00:00:00.000'; userSet('sw_laps', []); renderLaps(); persistStopwatch(); }});  
+$('lapSW').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const val = $('stopwatchDisplay').textContent; const laps = userGet('sw_laps', []); laps.unshift({ id: Date.now(), time: val }); userSet('sw_laps', laps); renderLaps(); renderStats(); });  
+function renderLaps(){ const laps = userGet('sw_laps', []); $('lapsContainer').innerHTML = laps.map(l=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.02)">${l.time}<button class="btn alt" onclick="deleteLap(${l.id})">Del</button></div>`).join(''); }  
+window.deleteLap = function(id){ if(!currentUser) return alert('Log in first'); let laps = userGet('sw_laps', []); laps = laps.filter(l=> l.id !== id); userSet('sw_laps', laps); renderLaps(); renderStats(); };  
+function persistStopwatch(){ userSet('sw_state', { swElapsed, swRunning, swStart: swRunning ? swStart : 0 }); }  
+function loadStopwatchState(){ const s = userGet('sw_state', null); if(s){ swElapsed = s.swElapsed||0; swRunning = s.swRunning||false; if(swRunning){ swStart = Date.now(); swInterval = setInterval(swUpdate,40); } swUpdate(); } renderLaps(); }  
+  
+/* ------------------ Music ------------------ */  
+$('playFileBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const f = $('musicFile').files[0]; if(!f) return alert('Choose audio file'); const url = URL.createObjectURL(f); $('musicPlayer').src = url; $('musicPlayer').play(); });  
+  
+/* ------------------ Mood ------------------ */  
+$('saveMoodBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const mood = $('moodSelect').value, note = $('moodNote').value.trim(); const arr = userGet('moods', []); arr.unshift({ id: Date.now(), mood, note, t: new Date().toISOString() }); userSet('moods', arr); $('moodNote').value=''; renderMoodHistory(); renderStats(); });  
+function renderMoodHistory(){ const arr = userGet('moods', []); $('moodHistory').innerHTML = arr.map(m => `<div class="card"><div style="display:flex;justify-content:space-between"><div>${escapeHtml(m.mood)} ${escapeHtml(m.note||'')}</div><small class="small">${new Date(m.t).toLocaleString()}</small></div></div>`).join(''); }  
+renderMoodHistory();  
+  
+/* ------------------ Weather ------------------ */  
+const weatherResult = $('weatherResult'), asideWeather = $('asideWeather');  
+async function displayWeatherFromData(data){  
+  asideWeather.textContent = `${Math.round(data.main.temp)}°C • ${data.weather[0].main}`;  
+  weatherResult.innerHTML = `  
+    <div style="display:flex;align-items:center;gap:12px">  
+      <div><strong>${escapeHtml(data.name)}, ${escapeHtml(data.sys.country)}</strong><div class="small">${escapeHtml(data.weather[0].description)}</div></div>  
+      <div style="font-size:1.6rem">${Math.round(data.main.temp)}°C</div>  
+    </div>  
+    <div style="margin-top:8px" class="small">Humidity ${data.main.humidity}% • Wind ${data.wind.speed} m/s</div>  
+  `;  
+}  
+async function fetchWeatherByCity(city){  
+  if(!city) return alert('Enter a city, like "London, GB"');  
+  if(!WEATHER_API_KEY){ weatherResult.innerHTML = '<div style="color:orange">Weather API key not set.</div>'; return; }  
+  try{  
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${WEATHER_API_KEY}&units=metric`);  
+    const data = await res.json();  
+    if(data.cod && data.cod !== 200){ weatherResult.innerHTML = '<div style="color:orange">City not found — try "City, CountryCode".</div>'; return; }  
+    displayWeatherFromData(data); userSet('lastWeather', city);  
+  } catch(e){  
+    weatherResult.innerHTML = '<div style="color:red">Network error</div>';  
+  }  
+}  
+async function fetchWeatherByCoords(lat, lon){  
+  if(!WEATHER_API_KEY){ weatherResult.innerHTML = '<div style="color:orange">Weather API key not set.</div>'; return; }  
+  try{  
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`);  
+    const data = await res.json();  
+    if(data.cod && data.cod !== 200){ weatherResult.innerHTML = '<div style="color:orange">Location data not found.</div>'; return; }  
+    displayWeatherFromData(data); userSet('lastWeather', data.name);  
+  } catch(e){  
+    weatherResult.innerHTML = '<div style="color:red">Network error</div>';  
+  }  
+}  
+$('weatherSearchBtn').addEventListener('click', ()=> fetchWeatherByCity($('weatherCity').value.trim()));  
+$('weatherDetectBtn').addEventListener('click', ()=> { if(!navigator.geolocation) return alert('Geolocation not supported'); navigator.geolocation.getCurrentPosition(p=> fetchWeatherByCoords(p.coords.latitude, p.coords.longitude), ()=> alert('Location denied or unavailable')); });  
+(function tryInitWeather(){  
+  if(!currentUser) return;  
+  const last = userGet('lastWeather', null);  
+  if(last){ $('weatherCity').value = last; fetchWeatherByCity(last); }  
+  else if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p=> fetchWeatherByCoords(p.coords.latitude, p.coords.longitude), ()=>{/* ignore */});  
+})();  
+  
+/* ------------------ Live Backgrounds ------------------ */  
+const bgSelect = $('bgSelect'), bgPreview = $('bgPreview'), bgApplyBtn = $('bgApplyBtn'), bgClearBtn = $('bgClearBtn');  
+const BG_KEY = 'ritters_bg_choice';  
+function updateBgPreview(choice){  
+  if(choice === 'space') bgPreview.style.background = "url('https://picsum.photos/1200/700?image=1050') center/cover no-repeat";  
+  else if(choice === 'nature') bgPreview.style.background = "url('https://picsum.photos/1200/700?image=1025') center/cover no-repeat";  
+  else if(choice === 'video') bgPreview.style.background = "linear-gradient(135deg,#021428,#042b4a)";  
+  else if(choice === 'solid') bgPreview.style.background = "#0b1b2a";  
+  else bgPreview.style.background = "linear-gradient(120deg,#071018,#0b1b2a)";  
+}  
+bgSelect.addEventListener('change', ()=> updateBgPreview(bgSelect.value));  
+bgApplyBtn.addEventListener('click', ()=>{  
+  const v = bgSelect.value;  
+  applyBgChoice(v);  
+  localStorage.setItem(BG_KEY, v);  
+});  
+bgClearBtn.addEventListener('click', ()=>{ localStorage.removeItem(BG_KEY); applyBgChoice('gradient'); bgSelect.value='gradient'; updateBgPreview('gradient'); });  
+function applyBgChoice(v){  
+  if(v === 'space') document.body.style.background = "url('https://picsum.photos/1600/1000?image=1050') center/cover no-repeat";  
+  else if(v === 'nature') document.body.style.background = "url('https://picsum.photos/1600/1000?image=1025') center/cover no-repeat";  
+  else if(v === 'video'){  
+    // simple animated gradient fallback (video embedding would need CORS or local file)  
+    document.body.style.background = "linear-gradient(120deg,#071018,#06283d)";  
+    // optional: you can place a <video> element behind layout for local files  
+  }  
+  else if(v === 'solid') document.body.style.background = "#071018";  
+  else document.body.style.background = "linear-gradient(120deg,#071018,#0b1b2a)";  
+}  
+(function initBg(){  
+  const saved = localStorage.getItem(BG_KEY) || 'gradient';  
+  bgSelect.value = saved;  
+  updateBgPreview(saved);  
+  applyBgChoice(saved);  
+})();  
+  
+/* ------------------ Search (DuckDuckGo + JSONP fallback) ------------------ */  
+/* JSONP helper */  
+function jsonp(url, timeout = 10000){  
+  return new Promise((resolve, reject) => {  
+    const cbName = 'ddg_cb_' + Date.now() + '_' + Math.floor(Math.random()*100000);  
+    window[cbName] = function(data){  
+      cleanup();  
+      resolve(data);  
+    };  
+    const script = document.createElement('script');  
+    const separator = url.includes('?') ? '&' : '?';  
+    script.src = url + separator + 'callback=' + cbName;  
+    script.onerror = () => { cleanup(); reject(new Error('JSONP load error')); };  
+    document.body.appendChild(script);  
+    const timer = setTimeout(()=>{ cleanup(); reject(new Error('JSONP timeout')); }, timeout);  
+    function cleanup(){ clearTimeout(timer); try{ delete window[cbName]; }catch(e){} script.remove(); }  
+  });  
+}  
+$('doSearchBtn').addEventListener('click', performSearch);  
+$('openSearchInNewTab').addEventListener('click', ()=> {  
+  const q = $('searchQuery').value.trim();  
+  if(!q) return alert('Enter a query');  
+  window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank');  
+});  
+async function performSearch(){  
+  const q = $('searchQuery').value.trim();  
+  if(!q) return alert('Enter a query');  
+  $('searchResults').innerHTML = `  
+    <div><a href="https://www.google.com/search?q=${encodeURIComponent(q)}" target="_blank">Open Google results for "${escapeHtml(q)}"</a></div>  
+    <div style="margin-top:6px"><a href="https://www.bing.com/search?q=${encodeURIComponent(q)}" target="_blank">Open Bing results</a></div>  
+    <div style="margin-top:6px"><a href="https://duckduckgo.com/?q=${encodeURIComponent(q)}" target="_blank">Open DuckDuckGo results</a></div>  
+  `;  
+  $('searchQuick').textContent = 'Searching...';  
+  const endpoint = `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`;  
+  try {  
+    const res = await fetch(endpoint);  
+    if(!res.ok) throw new Error('fetch failed');  
+    const data = await res.json();  
+    handleDuckAnswer(data);  
+    return;  
+  } catch (e) {  
+    try {  
+      const data = await jsonp(endpoint, 10000);  
+      handleDuckAnswer(data);  
+      return;  
+    } catch (e2) {  
+      $('searchQuick').textContent = 'Quick answer failed (network/CORS). Use the links above for a full search.';  
+      return;  
+    }  
+  }  
+}  
+function handleDuckAnswer(data){  
+  try{  
+    let qaHtml = '';  
+    if(data && data.AbstractText && data.AbstractText.trim()){  
+      qaHtml += `<div>${escapeHtml(data.AbstractText)}</div>`;  
+      if(data.AbstractURL) qaHtml += `<div class="small" style="margin-top:6px">Source: <a target="_blank" href="${escapeHtml(data.AbstractURL)}">${escapeHtml(data.AbstractURL)}</a></div>`;  
+    } else if(data && data.Heading && data.AbstractText){  
+      qaHtml += `<div><strong>${escapeHtml(data.Heading)}</strong> — ${escapeHtml(data.AbstractText)}</div>`;  
+    } else {  
+      let related = [];  
+      if(Array.isArray(data.RelatedTopics)){  
+        for(const t of data.RelatedTopics){  
+          if(t.Text) related.push({text:t.Text, url: t.FirstURL});  
+          else if(t.Topics && t.Topics.length){  
+            for(const sub of t.Topics){  
+              if(sub.Text) related.push({text: sub.Text, url: sub.FirstURL});  
+            }  
+          }  
+          if(related.length >= 5) break;  
+        }  
+      }  
+      if(related.length){  
+        qaHtml += '<div><strong>Related</strong></div><ul>';  
+        related.slice(0,5).forEach(r => qaHtml += `<li>${escapeHtml(r.text)} ${r.url?`— <a target="_blank" href="${escapeHtml(r.url)}">source</a>`:''}</li>`);  
+        qaHtml += '</ul>';  
+      }  
+    }  
+    if(!qaHtml) qaHtml = 'No quick answer found. Use the links above for a full web search.';  
+    $('searchQuick').innerHTML = qaHtml;  
+  }catch(err){  
+    $('searchQuick').textContent = 'Error processing quick answer';  
+  }  
+}  
+  
+/* ------------------ Messages (demo local room) ------------------ */  
+const CHAT_KEY = 'ritters_public_chat';  
+function loadChat(){ try{ return JSON.parse(localStorage.getItem(CHAT_KEY) || '[]'); }catch(e){ return []; } }  
+function saveChat(arr){ localStorage.setItem(CHAT_KEY, JSON.stringify(arr)); }  
+function renderChat(){  
+  const list = loadChat();  
+  const el = $('msgList');  
+  if(!el) return;  
+  el.innerHTML = list.map(m => `<div class="msg"><div style="display:flex;justify-content:space-between"><strong>${escapeHtml(m.user)}</strong><small class="small">${new Date(m.t).toLocaleTimeString()}</small></div><div style="margin-top:6px">${escapeHtml(m.text)}</div></div>`).join('');  
+  el.scrollTop = el.scrollHeight;  
+}  
+function sendMessage(){  
+  if(!currentUser) return alert('Log in first');  
+  const t = $('msgText').value.trim();  
+  if(!t) return;  
+  const list = loadChat();  
+  list.push({ id: Date.now(), user: currentUser, text: t, t: new Date().toISOString() });  
+  saveChat(list);  
+  $('msgText').value = '';  
+  renderChat();  
+}  
+window.addEventListener('storage', (ev)=>{  
+  if(ev.key === CHAT_KEY) renderChat();  
+});  
+setInterval(renderChat, 1500);  
+$('sendMsgBtn').addEventListener('click', sendMessage);  
+  
+/* ------------------ Profile edit ------------------ */  
+$('editPic').addEventListener('change', e => {  
+  if(!currentUser) return alert('Log in first');  
+  const f = e.target.files[0]; if(!f) return;  
+  const r = new FileReader(); r.onload = ()=> {  
+    $('profilePic').src = r.result; $('asidePic').src = r.result;  
+    const users = loadUsers(); if(!users[currentUser]) users[currentUser] = { passwordHash:'', bio:'', pic:'', joined:new Date().toISOString() };  
+    users[currentUser].pic = r.result; saveUsers(users);  
+  }; r.readAsDataURL(f);  
+});  
+$('saveProfileBtn').addEventListener('click', ()=> {  
+  if(!currentUser) return alert('Log in first');  
+  const users = loadUsers();  
+  if(!users[currentUser]) users[currentUser] = { passwordHash:'', bio:'', pic:'', joined:new Date().toISOString() };  
+  users[currentUser].bio = $('editBio').value;  
+  saveUsers(users);  
+  $('asideBio').textContent = users[currentUser].bio;  
+  alert('Profile saved');  
+});  
+$('deleteAccountBtn').addEventListener('click', ()=>{  
+  if(!currentUser) return alert('Log in first');  
+  if(!confirm('Delete account and all data? This is permanent.')) return;  
+  const users = loadUsers(); delete users[currentUser]; saveUsers(users);  
+  Object.keys(localStorage).forEach(k => { if(k.startsWith(currentUser + '::')) localStorage.removeItem(k); });  
+  logout();  
+});  
+  
+/* ------------------ Stats ------------------ */  
+function computeStats(){  
+  if(!currentUser) return { journal:0, notes:0, moods:0, events:0 };  
+  const journal = userGet('journal', []), notes = userGet('notes', []), moods = userGet('moods', []), events = userGet('events', {});  
+  return { journal: journal.length, notes: notes.length, moods: moods.length, events: Object.keys(events).length };  
+}  
+function renderStats(){  
+  const s = computeStats();  
+  $('statsArea').innerHTML = `  
+    <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Journal</div><div>${s.journal}</div></div>  
+    <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Notes</div><div>${s.notes}</div></div>  
+    <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Moods</div><div>${s.moods}</div></div>  
+    <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Events</div><div>${s.events}</div></div>  
+  `;  
+  $('profileStats').innerHTML = $('statsArea').innerHTML;  
+}  
+  
+/* ------------------ LOAD / BOOT ------------------ */  
+function renderAllUserData(){  
+  renderJournalList(); renderNotesList(); renderEvents(); renderLaps(); renderMoodHistory(); renderStats(); loadStopwatchState(); renderChat();  
+}  
+function loadStopwatchState(){  
+  const s = userGet('sw_state', null);  
+  if(s){ swElapsed = s.swElapsed||0; swRunning = s.swRunning||false; if(swRunning){ swStart = Date.now(); swInterval = setInterval(swUpdate,40); } swUpdate(); }  
+  renderLaps();  
+}  
+$('logoutBtnAside')?.addEventListener('click', logout);  
+  
+/* ensure renderStats updates when localStorage setItem called */  
+(function(){  
+  const orig = localStorage.setItem;  
+  localStorage.setItem = function(k,v){ orig.apply(this, arguments); try{ renderStats(); }catch(e){} };  
+})();  
+  
+/* small helper to escape HTML */  
+function escapeHtml(str){  
+  if(!str) return '';  
+  return String(str)  
+    .replace(/&/g, '&amp;')  
+    .replace(/</g, '&lt;')  
+    .replace(/>/g, '&gt;')  
+    .replace(/"/g, '&quot;')  
+    .replace(/'/g, '&#039;');  
+}  
+  
+/* initial draws */  
+renderMoodHistory();  
+renderStats();  
+renderChat();  
+  
+</script>  <!-- --- Mini Games: Snake (self-contained) --- -->  <style>  
+  /* Put this in your main CSS if you prefer; kept small for copy-paste */  
+  #gamesPanel { padding:20px; color:var(--text,#e6eef8); font-family:system-ui,-apple-system,Segoe UI,Roboto; }  
+  #snakeWrap { max-width:480px; margin:10px 0; background:rgba(255,255,255,0.02); padding:16px; border-radius:12px; box-shadow:0 6px 14px rgba(0,0,0,0.5); }  
+  #snakeHeader { display:flex; align-items:center; justify-content:space-between; gap:12px; }  
+  #snakeCanvas { width:100%; height:auto; background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.55)); border-radius:8px; display:block; margin-top:12px; touch-action: none; }  
+  .snakeControls { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }  
+  .btn { padding:8px 12px; border-radius:16px; background:linear-gradient(90deg,#7a4dff,#b36bff); color:white; border:none; cursor:pointer; font-weight:600; }  
+  .small { padding:6px 10px; font-size:13px; border-radius:12px; }  
+  #snakeScore { font-weight:700; }  
+  #snakeInfo { opacity:0.8; font-size:13px; }  
+</style>  <div id="gamesPanel" class="panel">  
+  <div style="display:flex;align-items:center;gap:12px;">  
+    <span style="font-size:26px">🎮 Mini Games</span>  
+  </div>    <div id="snakeWrap" role="region" aria-label="Snake Game">  
+    <div id="snakeHeader">  
+      <div>  
+        <div style="font-size:18px;font-weight:700">Snake</div>  
+        <div id="snakeInfo">Use arrow keys or swipe to play. Eat apples to grow.</div>  
+      </div>  
+      <div style="text-align:right">  
+        <div id="snakeScore">Score: 0</div>  
+        <div id="snakeHigh" style="opacity:0.8;font-size:13px">High: 0</div>  
+      </div>  
+    </div>  <canvas id="snakeCanvas" width="360" height="360"></canvas>  
 
-<div id="authModal" class="modal-backdrop" style="display:none">
-  <div class="auth-card">
-    <div class="auth-top">
-      <img id="authPreview" class="profile-pic" src="">
-      <div style="flex:1">
-        <h2 class="auth-title" id="authTitle">Welcome</h2>
-        <div class="small" id="authSubtitle">Sign up or log in to continue</div>
-      </div>
-    </div>
-    <div style="margin-top:14px">
-      <input id="authUser" placeholder="Username (no spaces)" autocomplete="username" />
-      <input id="authPass" placeholder="Password" type="password" autocomplete="current-password" />
-      <input id="authBio" placeholder="Short bio (optional)" />
-      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
-        <input id="authPic" type="file" accept="image/*" />
-        <button id="previewClear" class="btn alt">Clear Pic</button>
-      </div>
-      <div style="display:flex;gap:10px;margin-top:12px">
-        <button id="signupBtn" class="btn">Sign Up</button>
-        <button id="loginBtn" class="btn alt">Login</button>
-        <button id="demoBtn" class="btn" title="create a demo user (empty)">Demo</button>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <button id="closeAuth" class="btn alt">Close (if logged in)</button>
-        <button id="forgotBtn" class="btn" title="Not secure — local-only">Forgot pw?</button>
-      </div>
-      <div id="authMessage" class="small" style="margin-top:12px;color:#f7c6c6"></div>
-    </div>
-  </div>
+<div class="snakeControls">  
+  <button id="snakeStart" class="btn">Start</button>  
+  <button id="snakePause" class="btn small">Pause</button>  
+  <button id="snakeReset" class="btn small">Restart</button>  
+  <button id="snakeClose" class="btn small" style="background:transparent;border:1px solid rgba(255,255,255,0.06)">Close</button>  
 </div>
 
-<script>
-/* ---------------------------
-   Ritters OS — Full Demo (single file)
-   - Demo messages (localStorage)
-   - Live backgrounds saved
-   - All apps working locally
-   - Now with edit features and mood chart
---------------------------- */
-
-/* CONFIG */
-const USERS_KEY = 'ritters_users';
-const CURRENT_USER_KEY = 'ritters_currentUser';
-const WEATHER_API_KEY = 'bc35dc734bb6fb3c973c5c4de9d0c0e2'; // your existing key
-
-/* UTIL */
-const $ = id => document.getElementById(id);
-function loadUsers(){ return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); }
-function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
-function ukey(k){ return `${currentUser}::${k}`; }
-function userGet(k, fallback){ try { return JSON.parse(localStorage.getItem(ukey(k)) || JSON.stringify(fallback)); } catch(e){ return fallback; } }
-function userSet(k, value){ localStorage.setItem(ukey(k), JSON.stringify(value)); }
-function escapeHtml(str){ if(!str) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); }
-
-/* HASH password using SubtleCrypto SHA-256 -> hex */
-async function hashPassword(pw){
-  const enc = new TextEncoder();
-  const buf = await crypto.subtle.digest('SHA-256', enc.encode(pw));
-  const arr = Array.from(new Uint8Array(buf));
-  return arr.map(b => b.toString(16).padStart(2,'0')).join('');
-}
-
-/* AUTH */
-const authModal = $('authModal'), authUser = $('authUser'), authPass = $('authPass'), authBio = $('authBio'), authPic = $('authPic');
-const authPreview = $('authPreview'), authMessage = $('authMessage');
-$('previewClear').addEventListener('click', ()=> { authPreview.src = ''; authPic.value = ''; });
-authPic.addEventListener('change', (e)=>{ const f=e.target.files[0]; if(!f){authPreview.src='';return;} const r=new FileReader(); r.onload = ()=> authPreview.src = r.result; r.readAsDataURL(f); });
-function showAuth(msg=''){ authMessage.textContent = msg; authModal.style.display = 'flex'; }
-function hideAuth(){ authModal.style.display = 'none'; authMessage.textContent = ''; }
-
-/* current user */
-let currentUser = localStorage.getItem(CURRENT_USER_KEY) || null;
-
-/* nav */
-const navButtons = document.querySelectorAll('nav button');
-const sections = document.querySelectorAll('main section');
-function setActiveTab(tab){
-  navButtons.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-  sections.forEach(s => s.id === `tab-${tab}` ? s.classList.add('active') : s.classList.remove('active'));
-  window.scrollTo({top:0, behavior:'smooth'});
-}
-navButtons.forEach(b => b.addEventListener('click', ()=> setActiveTab(b.dataset.tab)));
-function navTo(t){ setActiveTab(t); }
-
-/* logout */
-function logout(){
-  localStorage.removeItem(CURRENT_USER_KEY);
-  currentUser = null;
-  showAuth('Signed out. Please sign in.');
-  renderSignedOutUI();
-}
-$('logoutBtn').addEventListener('click', logout);
-$('logoutBtnAside')?.addEventListener('click', logout);
-
-/* theme toggle */
-$('themeToggle').addEventListener('click', ()=>{
-  document.body.classList.toggle('light-theme');
-});
-
-/* auth actions */
-$('signupBtn').addEventListener('click', async ()=>{
-  const name = authUser.value.trim(); const pw = authPass.value;
-  if(!name||!pw){ authMessage.textContent='Username and password required.'; return; }
-  if(/\s/.test(name)){ authMessage.textContent='No spaces allowed in username.'; return; }
-  const users = loadUsers();
-  if(users[name]){ authMessage.textContent='Username taken.'; return; }
-  const hash = await hashPassword(pw);
-  users[name] = { passwordHash: hash, bio: authBio.value||'', pic: authPreview.src||'', joined: new Date().toISOString() };
-  saveUsers(users);
-  localStorage.setItem(CURRENT_USER_KEY, name);
-  initForUser();
-  hideAuth();
-});
-$('loginBtn').addEventListener('click', async ()=>{
-  const name = authUser.value.trim(), pw = authPass.value;
-  if(!name||!pw){ authMessage.textContent='Username and password required.'; return; }
-  const users = loadUsers();
-  if(!users[name]){ authMessage.textContent='No such user.'; return; }
-  const hash = await hashPassword(pw);
-  if(hash !== users[name].passwordHash){ authMessage.textContent='Invalid credentials.'; return; }
-  localStorage.setItem(CURRENT_USER_KEY, name);
-  initForUser();
-  hideAuth();
-});
-$('demoBtn').addEventListener('click', ()=>{
-  const users = loadUsers();
-  if(!users.demo){ users.demo = { passwordHash: '', bio:'Demo user', pic:'', joined:new Date().toISOString() }; saveUsers(users); }
-  localStorage.setItem(CURRENT_USER_KEY, 'demo');
-  initForUser(); hideAuth();
-});
-$('closeAuth').addEventListener('click', ()=> { if(!currentUser) return; hideAuth(); });
-$('forgotBtn').addEventListener('click', ()=> { alert('No server reset — this is local-only. Create a new account if needed.'); });
-
-/* signed out/in UI */
-function renderSignedOutUI(){
-  $('welcomeText').textContent = 'Please sign in';
-  $('logoutBtn').style.display = 'none';
-  $('currentUserLabel').textContent = '';
-  $('asideName').textContent = '';
-  $('asideBio').textContent = '';
-  $('asidePic').src = '';
-  $('profilePic').src = '';
-  $('profileName').textContent = '';
-  $('profileJoined').textContent = '';
-  $('profileStats').innerHTML = '';
-}
-function renderSignedInUI(userObj){
-  $('welcomeText').textContent = `Welcome, ${currentUser}`;
-  $('logoutBtn').style.display = 'inline-block';
-  $('currentUserLabel').textContent = currentUser;
-  $('asideName').textContent = currentUser;
-  $('asideBio').textContent = userObj.bio || '';
-  $('asidePic').src = userObj.pic || '';
-  $('profilePic').src = userObj.pic || '';
-  $('profileName').textContent = currentUser;
-  $('profileJoined').textContent = 'Joined: ' + new Date(userObj.joined).toLocaleDateString();
-}
-
-/* init after login */
-function initForUser(){
-  currentUser = localStorage.getItem(CURRENT_USER_KEY);
-  const users = loadUsers();
-  const me = users[currentUser] || { bio:'', pic:'', joined:new Date().toISOString(), passwordHash:'' };
-  renderSignedInUI(me);
-  renderAllUserData();
-  hideAuth();
-}
-
-/* show auth if no user */
-if(!currentUser){ showAuth(); renderSignedOutUI(); } else { initForUser(); }
-
-/* ------------------ Journal ------------------ */
-function renderJournalList(){
-  const list = userGet('journal', []);
-  $('journalList').innerHTML = list.map(item => `
-    <div class="card">
-      <div style="display:flex;justify-content:space-between">
-        <strong>${escapeHtml(item.title) || '(no title)'}</strong>
-        <small class="small">${new Date(item.created).toLocaleString()}</small>
-      </div>
-      <div style="margin-top:8px">${escapeHtml(item.body||'').replace(/\n/g,'<br>')}</div>
-      <div style="margin-top:8px">
-        <button class="btn alt" onclick="editJournal(${item.id})">Edit</button>
-        <button class="btn alt" onclick="deleteJournal(${item.id})">Delete</button>
-      </div>
-    </div>
-  `).join('');
-}
-window.editJournal = function(id){
-    const entry = userGet('journal', []).find(item => item.id === id);
-    if(entry) {
-        $('journalTitle').value = entry.title;
-        $('journalBody').value = entry.body;
-        $('journalId').value = id;
-        navTo('journal');
-    }
-}
-window.deleteJournal = function(id){
-  if(!currentUser){ alert('Log in first'); return; }
-  let arr = userGet('journal', []);
-  arr = arr.filter(i => i.id !== id);
-  userSet('journal', arr); renderJournalList(); renderStats();
-};
-$('saveJournalBtn').addEventListener('click', ()=>{
-  if(!currentUser){ alert('Log in first'); return; }
-  const title = $('journalTitle').value.trim(), body = $('journalBody').value.trim();
-  if(!title && !body){ alert('Write something'); return; }
-  let arr = userGet('journal', []);
-  const id = $('journalId').value;
-  if(id) {
-    // Update existing entry
-    arr = arr.map(i => i.id == id ? { ...i, title, body } : i);
-  } else {
-    // Add new entry
-    arr.unshift({ id: Date.now(), title, body, created: new Date().toISOString() });
-  }
-  userSet('journal', arr);
-  $('journalTitle').value=''; $('journalBody').value=''; $('journalId').value='';
-  renderJournalList(); renderStats();
-});
-$('clearJournalBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(confirm('Clear all journal entries?')){ userSet('journal', []); renderJournalList(); renderStats(); } });
-
-/* ------------------ Notes ------------------ */
-function renderNotesList(){
-  const arr = userGet('notes', []);
-  $('notesList').innerHTML = arr.map(n => `
-    <div class="card">
-      <div style="display:flex;justify-content:space-between"><strong>${escapeHtml(n.t)||'(no title)'}</strong><small class="small">${new Date(n.created).toLocaleString()}</small></div>
-      <div style="margin-top:8px">${escapeHtml(n.b||'').replace(/\n/g,'<br>')}</div>
-      <div style="margin-top:8px">
-        <button class="btn alt" onclick="editNote(${n.id})">Edit</button>
-        <button class="btn alt" onclick="deleteNote(${n.id})">Delete</button>
-      </div>
-    </div>
-  `).join('');
-}
-window.editNote = function(id){
-    const entry = userGet('notes', []).find(item => item.id === id);
-    if(entry) {
-        $('noteTitle').value = entry.t;
-        $('noteBody').value = entry.b;
-        $('noteId').value = id;
-        navTo('notes');
-    }
-}
-window.deleteNote = function(id){
-  if(!currentUser) return alert('Log in first');
-  let arr = userGet('notes', []);
-  arr = arr.filter(n => n.id !== id);
-  userSet('notes', arr); renderNotesList(); renderStats();
-};
-$('saveNoteBtn').addEventListener('click', ()=>{
-  if(!currentUser) return alert('Log in first');
-  const t = $('noteTitle').value.trim(), b = $('noteBody').value.trim();
-  if(!t && !b) return alert('Write a note.');
-  let arr = userGet('notes', []);
-  const id = $('noteId').value;
-  if(id) {
-    // Update existing entry
-    arr = arr.map(i => i.id == id ? { ...i, t, b } : i);
-  } else {
-    // Add new entry
-    arr.unshift({ id: Date.now(), t, b, created: new Date().toISOString() });
-  }
-  userSet('notes', arr);
-  $('noteTitle').value=''; $('noteBody').value=''; $('noteId').value='';
-  renderNotesList(); renderStats();
-});
-$('clearNotesBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(confirm('Clear all notes?')){ userSet('notes', []); renderNotesList(); renderStats(); } });
-
-/* ------------------ Calendar ------------------ */
-function renderEvents(){
-  const events = userGet('events', {});
-  const keys = Object.keys(events).sort();
-  $('calendarEventsList').innerHTML = keys.map(d => `
-    <div class="card"><div style="display:flex;justify-content:space-between"><strong>${d}</strong><small class="small">${events[d].length} event(s)</small></div>
-    <div style="margin-top:8px">${events[d].map(ev => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,0.01)">${escapeHtml(ev.title)}<button class="btn alt" onclick="deleteEvent('${d}',${ev.id})">Delete</button></div>`).join('')}</div></div>
-  `).join('');
-}
-$('saveEventBtn').addEventListener('click', ()=>{
-  if(!currentUser) return alert('Log in first');
-  const date = $('eventDate').value, title = $('eventTitle').value.trim();
-  if(!date || !title) return alert('Pick date and title');
-  const events = userGet('events', {}); if(!events[date]) events[date]=[]; events[date].push({ id: Date.now(), title }); userSet('events', events);
-  $('eventDate').value=''; $('eventTitle').value=''; renderEvents(); renderStats();
-});
-window.deleteEvent = function(date,id){
-  if(!currentUser) return alert('Log in first');
-  const events = userGet('events', {}); if(!events[date]) return; events[date] = events[date].filter(e=> e.id !== id); if(events[date].length===0) delete events[date]; userSet('events', events); renderEvents(); renderStats();
-};
-
-/* ------------------ Stopwatch ------------------ */
-let swInterval = null, swStart = 0, swElapsed = 0, swRunning = false;
-function swFormat(ms){
-  const hours = Math.floor(ms/3600000);
-  const mins = Math.floor(ms%3600000/60000);
-  const secs = Math.floor(ms%60000/1000);
-  const msecs = ms%1000;
-  return `${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}.${String(msecs).padStart(3,'0')}`;
-}
-function swUpdate(){ const now = Date.now(); const diff = (swRunning ? now - swStart + swElapsed : swElapsed); $('stopwatchDisplay').textContent = swFormat(diff); }
-$('startSW').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(swRunning) return; swStart = Date.now(); swRunning = true; swInterval = setInterval(swUpdate, 40); });
-$('stopSW').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(!swRunning) return; clearInterval(swInterval); swElapsed += Date.now() - swStart; swRunning = false; swUpdate(); persistStopwatch(); });
-$('resetSW').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(confirm('Reset stopwatch?')){ clearInterval(swInterval); swStart=0; swElapsed=0; swRunning=false; $('stopwatchDisplay').textContent='00:00:00.000'; userSet('sw_laps', []); renderLaps(); persistStopwatch(); }});
-$('lapSW').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const val = $('stopwatchDisplay').textContent; const laps = userGet('sw_laps', []); laps.unshift({ id: Date.now(), time: val }); userSet('sw_laps', laps); renderLaps(); renderStats(); });
-function renderLaps(){ const laps = userGet('sw_laps', []); $('lapsContainer').innerHTML = laps.map(l=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.02)">${l.time}<button class="btn alt" onclick="deleteLap(${l.id})">Del</button></div>`).join(''); }
-window.deleteLap = function(id){ if(!currentUser) return alert('Log in first'); let laps = userGet('sw_laps', []); laps = laps.filter(l=> l.id !== id); userSet('sw_laps', laps); renderLaps(); renderStats(); };
-function persistStopwatch(){ userSet('sw_state', { swElapsed, swRunning, swStart: swRunning ? swStart : 0 }); }
-function loadStopwatchState(){ const s = userGet('sw_state', null); if(s){ swElapsed = s.swElapsed||0; swRunning = s.swRunning||false; if(swRunning){ swStart = Date.now(); swInterval = setInterval(swUpdate,40); } swUpdate(); } renderLaps(); }
-
-/* ------------------ Music ------------------ */
-$('playFileBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const f = $('musicFile').files[0]; if(!f) return alert('Choose audio file'); const url = URL.createObjectURL(f); $('musicPlayer').src = url; $('musicPlayer').play(); });
-
-/* ------------------ Mood ------------------ */
-let moodChartInstance = null;
-function renderMoodChart() {
-    const moods = userGet('moods', []);
-    const moodCounts = {};
-    const moodLabels = {
-        '😁': 'Happy',
-        '🙂': 'Fine',
-        '😐': 'Meh',
-        '😔': 'Sad',
-        '😡': 'Angry',
-        '😴': 'Tired'
-    };
-    const moodColors = {
-        '😁': '#4CAF50',
-        '🙂': '#8BC34A',
-        '😐': '#FFEB3B',
-        '😔': '#FF9800',
-        '😡': '#F44336',
-        '😴': '#9E9E9E'
-    };
-    
-    // Reverse mood array for chronological order
-    const reversedMoods = [...moods].reverse();
-
-    reversedMoods.forEach(m => {
-        const date = new Date(m.t).toLocaleDateString();
-        if (!moodCounts[date]) moodCounts[date] = {};
-        moodCounts[date][m.mood] = (moodCounts[date][m.mood] || 0) + 1;
-    });
-
-    const chartLabels = Object.keys(moodCounts);
-    const chartData = {};
-    Object.keys(moodLabels).forEach(emoji => {
-        chartData[emoji] = chartLabels.map(date => moodCounts[date][emoji] || 0);
-    });
-
-    if (moodChartInstance) {
-        moodChartInstance.destroy();
-    }
-
-    const ctx = $('moodChart').getContext('2d');
-    moodChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: chartLabels,
-            datasets: Object.keys(chartData).map(emoji => ({
-                label: moodLabels[emoji],
-                data: chartData[emoji],
-                backgroundColor: moodColors[emoji],
-            }))
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    stacked: true,
-                    grid: { color: 'rgba(255,255,255,0.05)' }
-                },
-                y: {
-                    stacked: true,
-                    beginAtZero: true,
-                    grid: { color: 'rgba(255,255,255,0.05)' }
-                }
-            }
-        }
-    });
-}
-$('saveMoodBtn').addEventListener('click', ()=>{ 
-  if(!currentUser) return alert('Log in first'); 
-  const mood = $('moodSelect').value, note = $('moodNote').value.trim(); 
-  const arr = userGet('moods', []); arr.unshift({ id: Date.now(), mood, note, t: new Date().toISOString() }); 
-  userSet('moods', arr); 
-  $('moodNote').value=''; 
-  renderMoodHistory(); 
-  renderMoodChart();
-  renderStats(); 
-});
-function renderMoodHistory(){ const arr = userGet('moods', []); $('moodHistory').innerHTML = arr.map(m => `<div class="card"><div style="display:flex;justify-content:space-between"><div>${escapeHtml(m.mood)} ${escapeHtml(m.note||'')}</div><small class="small">${new Date(m.t).toLocaleString()}</small></div></div>`).join(''); }
-renderMoodHistory();
-
-/* ------------------ Weather ------------------ */
-const weatherResult = $('weatherResult'), asideWeather = $('asideWeather');
-async function displayWeatherFromData(data){
-  asideWeather.textContent = `${Math.round(data.main.temp)}°C • ${data.weather[0].main}`;
-  weatherResult.innerHTML = `
-    <div style="display:flex;align-items:center;gap:12px">
-      <div><strong>${escapeHtml(data.name)}, ${escapeHtml(data.sys.country)}</strong><div class="small">${escapeHtml(data.weather[0].description)}</div></div>
-      <div style="font-size:1.6rem">${Math.round(data.main.temp)}°C</div>
-    </div>
-    <div style="margin-top:8px" class="small">Humidity ${data.main.humidity}% • Wind ${data.wind.speed} m/s</div>
-  `;
-}
-async function fetchWeatherByCity(city){
-  if(!city) return alert('Enter a city, like "London, GB"');
-  if(!WEATHER_API_KEY){ weatherResult.innerHTML = '<div style="color:orange">Weather API key not set.</div>'; return; }
-  try{
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${WEATHER_API_KEY}&units=metric`);
-    const data = await res.json();
-    if(data.cod && data.cod !== 200){ weatherResult.innerHTML = '<div style="color:orange">City not found — try "City, CountryCode".</div>'; return; }
-    displayWeatherFromData(data); userSet('lastWeather', city);
-  } catch(e){
-    weatherResult.innerHTML = '<div style="color:red">Network error</div>';
-  }
-}
-async function fetchWeatherByCoords(lat, lon){
-  if(!WEATHER_API_KEY){ weatherResult.innerHTML = '<div style="color:orange">Weather API key not set.</div>'; return; }
-  try{
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`);
-    const data = await res.json();
-    if(data.cod && data.cod !== 200){ weatherResult.innerHTML = '<div style="color:orange">Location data not found.</div>'; return; }
-    displayWeatherFromData(data); userSet('lastWeather', data.name);
-  } catch(e){
-    weatherResult.innerHTML = '<div style="color:red">Network error</div>';
-  }
-}
-$('weatherSearchBtn').addEventListener('click', ()=> fetchWeatherByCity($('weatherCity').value.trim()));
-$('weatherDetectBtn').addEventListener('click', ()=> { if(!navigator.geolocation) return alert('Geolocation not supported'); navigator.geolocation.getCurrentPosition(p=> fetchWeatherByCoords(p.coords.latitude, p.coords.longitude), ()=> alert('Location denied or unavailable')); });
-(function tryInitWeather(){
-  if(!currentUser) return;
-  const last = userGet('lastWeather', null);
-  if(last){ $('weatherCity').value = last; fetchWeatherByCity(last); }
-  else if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p=> fetchWeatherByCoords(p.coords.latitude, p.coords.longitude), ()=>{/* ignore */});
-})();
-
-/* ------------------ Live Backgrounds ------------------ */
-const bgSelect = $('bgSelect'), bgPreview = $('bgPreview'), bgApplyBtn = $('bgApplyBtn'), bgClearBtn = $('bgClearBtn');
-const BG_KEY = 'ritters_bg_choice';
-function updateBgPreview(choice){
-  if(choice === 'space') bgPreview.style.background = "url('https://picsum.photos/1200/700?image=1050') center/cover no-repeat";
-  else if(choice === 'nature') bgPreview.style.background = "url('https://picsum.photos/1200/700?image=1025') center/cover no-repeat";
-  else if(choice === 'video') bgPreview.style.background = "linear-gradient(135deg,#021428,#042b4a)";
-  else if(choice === 'solid') bgPreview.style.background = "#0b1b2a";
-  else bgPreview.style.background = "linear-gradient(120deg,#071018,#0b1b2a)";
-}
-bgSelect.addEventListener('change', ()=> updateBgPreview(bgSelect.value));
-bgApplyBtn.addEventListener('click', ()=>{
-  const v = bgSelect.value;
-  applyBgChoice(v);
-  localStorage.setItem(BG_KEY, v);
-});
-bgClearBtn.addEventListener('click', ()=>{ localStorage.removeItem(BG_KEY); applyBgChoice('gradient'); bgSelect.value='gradient'; updateBgPreview('gradient'); });
-function applyBgChoice(v){
-  if(v === 'space') document.body.style.background = "url('https://picsum.photos/1600/1000?image=1050') center/cover no-repeat";
-  else if(v === 'nature') document.body.style.background = "url('https://picsum.photos/1600/1000?image=1025') center/cover no-repeat";
-  else if(v === 'video'){
-    document.body.style.background = "linear-gradient(120deg,#071018,#06283d)";
-  }
-  else if(v === 'solid') document.body.style.background = "#071018";
-  else document.body.style.background = "linear-gradient(120deg,#071018,#0b1b2a)";
-}
-(function initBg(){
-  const saved = localStorage.getItem(BG_KEY) || 'gradient';
-  bgSelect.value = saved;
-  updateBgPreview(saved);
-  applyBgChoice(saved);
-})();
-
-/* ------------------ Search (DuckDuckGo + JSONP fallback) ------------------ */
-/* JSONP helper */
-function jsonp(url, timeout = 10000){
-  return new Promise((resolve, reject) => {
-    const cbName = 'ddg_cb_' + Date.now() + '_' + Math.floor(Math.random()*100000);
-    window[cbName] = function(data){
-      cleanup();
-      resolve(data);
-    };
-    const script = document.createElement('script');
-    const separator = url.includes('?') ? '&' : '?';
-    script.src = url + separator + 'callback=' + cbName;
-    script.onerror = () => { cleanup(); reject(new Error('JSONP load error')); };
-    document.body.appendChild(script);
-    const timer = setTimeout(()=>{ cleanup(); reject(new Error('JSONP timeout')); }, timeout);
-    function cleanup(){ clearTimeout(timer); try{ delete window[cbName]; }catch(e){} script.remove(); }
-  });
-}
-$('doSearchBtn').addEventListener('click', performSearch);
-$('openSearchInNewTab').addEventListener('click', ()=> {
-  const q = $('searchQuery').value.trim();
-  if(!q) return alert('Enter a query');
-  window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank');
-});
-async function performSearch(){
-  const q = $('searchQuery').value.trim();
-  if(!q) return alert('Enter a query');
-  $('searchResults').innerHTML = `
-    <div><a href="https://www.google.com/search?q=${encodeURIComponent(q)}" target="_blank">Open Google results for "${escapeHtml(q)}"</a></div>
-    <div style="margin-top:6px"><a href="https://www.bing.com/search?q=${encodeURIComponent(q)}" target="_blank">Open Bing results</a></div>
-    <div style="margin-top:6px"><a href="https://duckduckgo.com/?q=${encodeURIComponent(q)}" target="_blank">Open DuckDuckGo results</a></div>
-  `;
-  $('searchQuick').textContent = 'Searching...';
-  const endpoint = `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`;
-  try {
-    const res = await fetch(endpoint);
-    if(!res.ok) throw new Error('fetch failed');
-    const data = await res.json();
-    handleDuckAnswer(data);
-    return;
-  } catch (e) {
-    try {
-      const data = await jsonp(endpoint, 10000);
-      handleDuckAnswer(data);
-      return;
-    } catch (e2) {
-      $('searchQuick').textContent = 'Quick answer failed (network/CORS). Use the links above for a full search.';
-      return;
-    }
-  }
-}
-function handleDuckAnswer(data){
-  try{
-    let qaHtml = '';
-    if(data && data.AbstractText && data.AbstractText.trim()){
-      qaHtml += `<div>${escapeHtml(data.AbstractText)}</div>`;
-      if(data.AbstractURL) qaHtml += `<div class="small" style="margin-top:6px">Source: <a target="_blank" href="${escapeHtml(data.AbstractURL)}">${escapeHtml(data.AbstractURL)}</a></div>`;
-    } else if(data && data.Heading && data.AbstractText){
-      qaHtml += `<div><strong>${escapeHtml(data.Heading)}</strong> — ${escapeHtml(data.AbstractText)}</div>`;
-    } else {
-      let related = [];
-      if(Array.isArray(data.RelatedTopics)){
-        for(const t of data.RelatedTopics){
-          if(t.Text) related.push({text:t.Text, url: t.FirstURL});
-          else if(t.Topics && t.Topics.length){
-            for(const sub of t.Topics){
-              if(sub.Text) related.push({text: sub.Text, url: sub.FirstURL});
-            }
-          }
-          if(related.length >= 5) break;
-        }
-      }
-      if(related.length){
-        qaHtml += '<div><strong>Related</strong></div><ul>';
-        related.slice(0,5).forEach(r => qaHtml += `<li>${escapeHtml(r.text)} ${r.url?`— <a target="_blank" href="${escapeHtml(r.url)}">source</a>`:''}</li>`);
-        qaHtml += '</ul>';
-      }
-    }
-    if(!qaHtml) qaHtml = 'No quick answer found. Use the links above for a full web search.';
-    $('searchQuick').innerHTML = qaHtml;
-  }catch(err){
-    $('searchQuick').textContent = 'Error processing quick answer';
-  }
-}
-
-/* ------------------ Messages (demo local room) ------------------ */
-const CHAT_KEY = 'ritters_public_chat';
-function loadChat(){ try{ return JSON.parse(localStorage.getItem(CHAT_KEY) || '[]'); }catch(e){ return []; } }
-function saveChat(arr){ localStorage.setItem(CHAT_KEY, JSON.stringify(arr)); }
-function renderChat(){
-  const list = loadChat();
-  const el = $('msgList');
-  if(!el) return;
-  el.innerHTML = list.map(m => `<div class="msg"><div style="display:flex;justify-content:space-between"><strong>${escapeHtml(m.user)}</strong><small class="small">${new Date(m.t).toLocaleTimeString()}</small></div><div style="margin-top:6px">${escapeHtml(m.text)}</div></div>`).join('');
-  el.scrollTop = el.scrollHeight;
-}
-function sendMessage(){
-  if(!currentUser) return alert('Log in first');
-  const t = $('msgText').value.trim();
-  if(!t) return;
-  const list = loadChat();
-  list.push({ id: Date.now(), user: currentUser, text: t, t: new Date().toISOString() });
-  saveChat(list);
-  $('msgText').value = '';
-  renderChat();
-}
-window.addEventListener('storage', (ev)=>{
-  if(ev.key === CHAT_KEY) renderChat();
-});
-setInterval(renderChat, 1500);
-$('sendMsgBtn').addEventListener('click', sendMessage);
-
-/* ------------------ Profile edit ------------------ */
-$('editPic').addEventListener('change', e => {
-  if(!currentUser) return alert('Log in first');
-  const f = e.target.files[0]; if(!f) return;
-  const r = new FileReader(); r.onload = ()=> {
-    $('profilePic').src = r.result; $('asidePic').src = r.result;
-    const users = loadUsers(); if(!users[currentUser]) users[currentUser] = { passwordHash:'', bio:'', pic:'', joined:new Date().toISOString() };
-    users[currentUser].pic = r.result; saveUsers(users);
-  }; r.readAsDataURL(f);
-});
-$('saveProfileBtn').addEventListener('click', ()=> {
-  if(!currentUser) return alert('Log in first');
-  const users = loadUsers();
-  if(!users[currentUser]) users[currentUser] = { passwordHash:'', bio:'', pic:'', joined:new Date().toISOString() };
-  users[currentUser].bio = $('editBio').value;
-  saveUsers(users);
-  $('asideBio').textContent = users[currentUser].bio;
-  alert('Profile saved');
-});
-$('deleteAccountBtn').addEventListener('click', ()=>{
-  if(!currentUser) return alert('Log in first');
-  if(!confirm('Delete account and all data? This is permanent.')) return;
-  const users = loadUsers(); delete users[currentUser]; saveUsers(users);
-  Object.keys(localStorage).forEach(k => { if(k.startsWith(currentUser + '::')) localStorage.removeItem(k); });
-  logout();
-});
-
-/* ------------------ Stats ------------------ */
-function computeStats(){
-  if(!currentUser) return { journal:0, notes:0, moods:0, events:0 };
-  const journal = userGet('journal', []), notes = userGet('notes', []), moods = userGet('moods', []), events = userGet('events', {});
-  return { journal: journal.length, notes: notes.length, moods: moods.length, events: Object.keys(events).length };
-}
-function renderStats(){
-  const s = computeStats();
-  $('statsArea').innerHTML = `
-    <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Journal</div><div>${s.journal}</div></div>
-    <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Notes</div><div>${s.notes}</div></div>
-    <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Moods</div><div>${s.moods}</div></div>
-    <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><div class="small">Events</div><div>${s.events}</div></div>
-  `;
-  $('profileStats').innerHTML = $('statsArea').innerHTML;
-}
-
-/* ------------------ LOAD / BOOT ------------------ */
-function renderAllUserData(){
-  renderJournalList(); renderNotesList(); renderEvents(); renderLaps(); renderMoodHistory(); renderStats(); loadStopwatchState(); renderChat(); renderMoodChart();
-}
-function loadStopwatchState(){
-  const s = userGet('sw_state', null);
-  if(s){ swElapsed = s.swElapsed||0; swRunning = s.swRunning||false; if(swRunning){ swStart = Date.now(); swInterval = setInterval(swUpdate,40); } swUpdate(); }
-  renderLaps();
-}
-$('logoutBtnAside')?.addEventListener('click', logout);
-
-/* ensure renderStats updates when localStorage setItem called */
-(function(){
-  const orig = localStorage.setItem;
-  localStorage.setItem = function(k,v){ orig.apply(this, arguments); try{ renderStats(); }catch(e){} };
-})();
-
-/* initial draws */
-renderMoodHistory();
-renderStats();
-renderChat();
-renderMoodChart();
-
-</script>
-<style>
-  /* Put this in your main CSS if you prefer; kept small for copy-paste */
-  #gamesPanel { padding:20px; color:var(--text,#e6eef8); font-family:system-ui,-apple-system,Segoe UI,Roboto; }
-  #snakeWrap { max-width:480px; margin:10px 0; background:rgba(255,255,255,0.02); padding:16px; border-radius:12px; box-shadow:0 6px 14px rgba(0,0,0,0.5); }
-  #snakeHeader { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-  #snakeCanvas { width:100%; height:auto; background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.55)); border-radius:8px; display:block; margin-top:12px; touch-action: none; }
-  .snakeControls { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }
-  .btn { padding:8px 12px; border-radius:16px; background:linear-gradient(90deg,#7a4dff,#b36bff); color:white; border:none; cursor:pointer; font-weight:600; }
-  .small { padding:6px 10px; font-size:13px; border-radius:12px; }
-  #snakeScore { font-weight:700; }
-  #snakeInfo { opacity:0.8; font-size:13px; }
-</style>
-
-<div id="gamesPanel" class="panel">
-  <div style="display:flex;align-items:center;gap:12px;">
-    <span style="font-size:26px">🎮 Mini Games</span>
-  </div>
-
-  <div id="snakeWrap" role="region" aria-label="Snake Game">
-    <div id="snakeHeader">
-      <div>
-        <div style="font-size:18px;font-weight:700">Snake</div>
-        <div id="snakeInfo">Use arrow keys or swipe to play. Eat apples to grow.</div>
-      </div>
-      <div style="text-align:right">
-        <div id="snakeScore">Score: 0</div>
-        <div id="snakeHigh" style="opacity:0.8;font-size:13px">High: 0</div>
-      </div>
-    </div>
-
-    <canvas id="snakeCanvas" width="360" height="360"></canvas>
-
-    <div class="snakeControls">
-      <button id="snakeStart" class="btn">Start</button>
-      <button id="snakePause" class="btn small">Pause</button>
-      <button id="snakeReset" class="btn small">Restart</button>
-      <button id="snakeClose" class="btn small" style="background:transparent;border:1px solid rgba(255,255,255,0.06)">Close</button>
-    </div>
-  </div>
-</div>
-
-<script>
-(function(){
-  // Config
-  const canvas = document.getElementById('snakeCanvas');
-  const ctx = canvas.getContext('2d');
-  const startBtn = document.getElementById('snakeStart');
-  const pauseBtn = document.getElementById('snakePause');
-  const resetBtn = document.getElementById('snakeReset');
-  const closeBtn = document.getElementById('snakeClose');
-  const scoreEl = document.getElementById('snakeScore');
-  const highEl = document.getElementById('snakeHigh');
-
-  // Responsive canvas: keep square and adjust to container
-  function resizeCanvas(){
-    const rect = canvas.getBoundingClientRect();
-    const size = Math.min(480, rect.width); // limit max size
-    canvas.width = size;
-    canvas.height = size;
-  }
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
-
-  // Game state
-  let grid = 18;            // number of cells per row/col
-  let cellSize = 0;
-  let snake = [];
-  let dir = {x:1,y:0};
-  let nextDir = null;
-  let apple = null;
-  let running = false;
-  let paused = false;
-  let intervalId = null;
-  let speed = 100; // ms per tick (lower = faster)
-  let score = 0;
-  let high = Number(localStorage.getItem('rcp_snake_high') || 0);
-
-  highEl.textContent = 'High: ' + high;
-
-  function startGame(){
-    cancelTick();
-    grid = Math.max(12, Math.floor(canvas.width/20)); // scale grid to canvas size
-    cellSize = Math.floor(canvas.width / grid);
-    snake = [{x: Math.floor(grid/2), y: Math.floor(grid/2)}];
-    dir = {x:1,y:0};
-    nextDir = null;
-    spawnApple();
-    running = true;
-    paused = false;
-    score = 0;
-    scoreEl.textContent = 'Score: ' + score;
-    intervalId = setInterval(tick, speed);
-    draw();
-  }
-
-  function pauseGame(){
-    if(!running) return;
-    paused = !paused;
-    if(paused) cancelTick(); else intervalId = setInterval(tick, speed);
-    pauseBtn.textContent = paused ? 'Resume' : 'Pause';
-  }
-
-  function resetGame(){
-    startGame();
-  }
-
-  function closeGame(){
-    cancelTick();
-    running = false;
-    paused = false;
-    // optionally hide panel — if you want to hide instead, your app can add logic here
-    // document.getElementById('gamesPanel').classList.add('hidden');
-  }
-
-  function cancelTick(){
-    if(intervalId) { clearInterval(intervalId); intervalId = null; }
-  }
-
-  function spawnApple(){
-    let tries = 0;
-    while(true){
-      tries++;
-      const ax = Math.floor(Math.random()*grid);
-      const ay = Math.floor(Math.random()*grid);
-      if(!snake.some(s => s.x===ax && s.y===ay)){
-        apple = {x:ax,y:ay};
-        return;
-      }
-      if(tries>200) { apple = null; return; }
-    }
-  }
-
-  function tick(){
-    if(!running || paused) return;
-    if(nextDir){
-      // prevent immediate reverse
-      if(!(nextDir.x === -dir.x && nextDir.y === -dir.y)) dir = nextDir;
-      nextDir = null;
-    }
-
-    const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
-
-    // wrap-around (change to collision with walls if you prefer)
-    if(head.x < 0) head.x = grid - 1;
-    if(head.y < 0) head.y = grid - 1;
-    if(head.x >= grid) head.x = 0;
-    if(head.y >= grid) head.y = 0;
-
-    // collision with self?
-    if(snake.some(s => s.x === head.x && s.y === head.y)){
-      gameOver();
-      return;
-    }
-
-    snake.unshift(head);
-
-    // apple eaten?
-    if(apple && head.x === apple.x && head.y === apple.y){
-      score += 1;
-      scoreEl.textContent = 'Score: ' + score;
-      spawnApple();
-      // speed up slightly every 5 apples
-      if(score % 5 === 0 && speed > 40){
-        speed = Math.max(40, speed - 8);
-        cancelTick();
-        intervalId = setInterval(tick, speed);
-      }
-    } else {
-      snake.pop();
-    }
-
-    draw();
-  }
-
-  function gameOver(){
-    running = false;
-    cancelTick();
-    // save high score
-    if(score > high){
-      high = score;
-      localStorage.setItem('rcp_snake_high', String(high));
-      highEl.textContent = 'High: ' + high;
-    }
-    // simple game over effect
-    for(let i=0;i<3;i++){
-      // blink canvas quickly
-      setTimeout(()=>{ canvas.style.opacity = i%2?0.3:1; }, i*120);
-    }
-    setTimeout(()=>{ canvas.style.opacity = 1; }, 360);
-    // keep last state drawn, user can restart
-  }
-
-  function draw(){
-    // clear
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    // background
-    ctx.fillStyle = 'rgba(0,0,0,0.25)';
-    roundRect(ctx, 0, 0, canvas.width, canvas.height, 8, true, false);
-
-    // grid - optional subtle lines
-    ctx.strokeStyle = 'rgba(255,255,255,0.02)';
-    ctx.lineWidth = 1;
-    for(let i=1;i<grid;i++){
-      // vertical
-      ctx.beginPath();
-      ctx.moveTo(i*cellSize,0);
-      ctx.lineTo(i*cellSize,canvas.height);
-      ctx.stroke();
-      // horizontal
-      ctx.beginPath();
-      ctx.moveTo(0,i*cellSize);
-      ctx.lineTo(canvas.width,i*cellSize);
-      ctx.stroke();
-    }
-
-    // snake
-    ctx.fillStyle = '#4caf50'; // body
-    ctx.strokeStyle = '#2e7d32'; // body
-    snake.forEach((s,i) => {
-      // head
-      if(i===0) { ctx.fillStyle = '#66bb6a'; ctx.strokeStyle = '#388e3c'; }
-      ctx.beginPath();
-      roundRect(ctx, s.x*cellSize, s.y*cellSize, cellSize, cellSize, 2);
-      ctx.fill();
-      ctx.stroke();
-      // restore body color
-      ctx.fillStyle = '#4caf50';
-      ctx.strokeStyle = '#2e7d32';
-    });
-
-    // apple
-    if(apple){
-      ctx.fillStyle = '#f44336';
-      ctx.beginPath();
-      ctx.arc(apple.x * cellSize + cellSize/2, apple.y * cellSize + cellSize/2, cellSize/2.5, 0, 2*Math.PI);
-      ctx.fill();
-    }
-  }
-
-  // Round rectangle helper
-  function roundRect(ctx, x, y, width, height, radius, fill=true, stroke=true) {
-    if (typeof radius === 'number') { radius = {tl: radius, tr: radius, br: radius, bl: radius}; }
-    else { const defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0}; for (let side in defaultRadius) { radius[side] = radius[side] || defaultRadius[side]; } }
-    ctx.beginPath();
-    ctx.moveTo(x + radius.tl, y);
-    ctx.lineTo(x + width - radius.tr, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
-    ctx.lineTo(x + width, y + height - radius.br);
-    ctx.quadraticCurveCurveTo(x + width, y + height, x + width - radius.br, y + height);
-    ctx.lineTo(x + radius.bl, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
-    ctx.lineTo(x, y + radius.tl);
-    ctx.quadraticCurveTo(x, y, x + radius.tl, y);
-    ctx.closePath();
-    if (fill) { ctx.fill(); }
-    if (stroke) { ctx.stroke(); }
-  }
-
-  // Controls
-  document.addEventListener('keydown', e => {
-    if(!running || paused) return;
-    switch(e.key){
-      case 'ArrowUp': case 'w': if(dir.y !== 1) nextDir={x:0,y:-1}; break;
-      case 'ArrowDown': case 's': if(dir.y !== -1) nextDir={x:0,y:1}; break;
-      case 'ArrowLeft': case 'a': if(dir.x !== 1) nextDir={x:-1,y:0}; break;
-      case 'ArrowRight': case 'd': if(dir.x !== -1) nextDir={x:1,y:0}; break;
-    }
-  });
-
-  // Touch controls
-  let startX, startY;
-  canvas.addEventListener('touchstart', e => {
-    e.preventDefault();
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-  });
-  canvas.addEventListener('touchend', e => {
-    if(!running || paused) return;
-    const endX = e.changedTouches[0].clientX;
-    const endY = e.changedTouches[0].clientY;
-    const diffX = endX - startX;
-    const diffY = endY - startY;
-
-    if(Math.abs(diffX) > Math.abs(diffY)){
-      if(diffX > 0){ if(dir.x !== -1) nextDir = {x:1,y:0}; }
-      else { if(dir.x !== 1) nextDir = {x:-1,y:0}; }
-    } else {
-      if(diffY > 0){ if(dir.y !== -1) nextDir = {x:0,y:1}; }
-      else { if(dir.y !== 1) nextDir = {x:0,y:-1}; }
-    }
-  });
-
-  // Event listeners
-  startBtn.addEventListener('click', startGame);
-  pauseBtn.addEventListener('click', pauseGame);
-  resetBtn.addEventListener('click', resetGame);
-  closeBtn.addEventListener('click', closeGame);
-
-  // initial draw
-  draw();
-})();
-</script>
-
-</body>
-</html>
+  </div>  
+</div>  <script>  
+(function(){  
+  // Config  
+  const canvas = document.getElementById('snakeCanvas');  
+  const ctx = canvas.getContext('2d');  
+  const startBtn = document.getElementById('snakeStart');  
+  const pauseBtn = document.getElementById('snakePause');  
+  const resetBtn = document.getElementById('snakeReset');  
+  const closeBtn = document.getElementById('snakeClose');  
+  const scoreEl = document.getElementById('snakeScore');  
+  const highEl = document.getElementById('snakeHigh');  
+  
+  // Responsive canvas: keep square and adjust to container  
+  function resizeCanvas(){  
+    const rect = canvas.getBoundingClientRect();  
+    const size = Math.min(480, rect.width); // limit max size  
+    canvas.width = size;  
+    canvas.height = size;  
+  }  
+  window.addEventListener('resize', resizeCanvas);  
+  resizeCanvas();  
+  
+  // Game state  
+  let grid = 18;            // number of cells per row/col  
+  let cellSize = 0;  
+  let snake = [];  
+  let dir = {x:1,y:0};  
+  let nextDir = null;  
+  let apple = null;  
+  let running = false;  
+  let paused = false;  
+  let intervalId = null;  
+  let speed = 100; // ms per tick (lower = faster)  
+  let score = 0;  
+  let high = Number(localStorage.getItem('rcp_snake_high') || 0);  
+  
+  highEl.textContent = 'High: ' + high;  
+  
+  function startGame(){  
+    cancelTick();  
+    grid = Math.max(12, Math.floor(canvas.width/20)); // scale grid to canvas size  
+    cellSize = Math.floor(canvas.width / grid);  
+    snake = [{x: Math.floor(grid/2), y: Math.floor(grid/2)}];  
+    dir = {x:1,y:0};  
+    nextDir = null;  
+    spawnApple();  
+    running = true;  
+    paused = false;  
+    score = 0;  
+    scoreEl.textContent = 'Score: ' + score;  
+    intervalId = setInterval(tick, speed);  
+    draw();  
+  }  
+  
+  function pauseGame(){  
+    if(!running) return;  
+    paused = !paused;  
+    if(paused) cancelTick(); else intervalId = setInterval(tick, speed);  
+    pauseBtn.textContent = paused ? 'Resume' : 'Pause';  
+  }  
+  
+  function resetGame(){  
+    startGame();  
+  }  
+  
+  function closeGame(){  
+    cancelTick();  
+    running = false;  
+    paused = false;  
+    // optionally hide panel — if you want to hide instead, your app can add logic here  
+    // document.getElementById('gamesPanel').classList.add('hidden');  
+  }  
+  
+  function cancelTick(){  
+    if(intervalId) { clearInterval(intervalId); intervalId = null; }  
+  }  
+  
+  function spawnApple(){  
+    let tries = 0;  
+    while(true){  
+      tries++;  
+      const ax = Math.floor(Math.random()*grid);  
+      const ay = Math.floor(Math.random()*grid);  
+      if(!snake.some(s => s.x===ax && s.y===ay)){  
+        apple = {x:ax,y:ay};  
+        return;  
+      }  
+      if(tries>200) { apple = null; return; }  
+    }  
+  }  
+  
+  function tick(){  
+    if(!running || paused) return;  
+    if(nextDir){  
+      // prevent immediate reverse  
+      if(!(nextDir.x === -dir.x && nextDir.y === -dir.y)) dir = nextDir;  
+      nextDir = null;  
+    }  
+  
+    const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};  
+  
+    // wrap-around (change to collision with walls if you prefer)  
+    if(head.x < 0) head.x = grid - 1;  
+    if(head.y < 0) head.y = grid - 1;  
+    if(head.x >= grid) head.x = 0;  
+    if(head.y >= grid) head.y = 0;  
+  
+    // collision with self?  
+    if(snake.some(s => s.x === head.x && s.y === head.y)){  
+      gameOver();  
+      return;  
+    }  
+  
+    snake.unshift(head);  
+  
+    // apple eaten?  
+    if(apple && head.x === apple.x && head.y === apple.y){  
+      score += 1;  
+      scoreEl.textContent = 'Score: ' + score;  
+      spawnApple();  
+      // speed up slightly every 5 apples  
+      if(score % 5 === 0 && speed > 40){  
+        speed = Math.max(40, speed - 8);  
+        cancelTick();  
+        intervalId = setInterval(tick, speed);  
+      }  
+    } else {  
+      snake.pop();  
+    }  
+  
+    draw();  
+  }  
+  
+  function gameOver(){  
+    running = false;  
+    cancelTick();  
+    // save high score  
+    if(score > high){  
+      high = score;  
+      localStorage.setItem('rcp_snake_high', String(high));  
+      highEl.textContent = 'High: ' + high;  
+    }  
+    // simple game over effect  
+    for(let i=0;i<3;i++){  
+      // blink canvas quickly  
+      setTimeout(()=>{ canvas.style.opacity = i%2?0.3:1; }, i*120);  
+    }  
+    setTimeout(()=>{ canvas.style.opacity = 1; }, 360);  
+    // keep last state drawn, user can restart  
+  }  
+  
+  function draw(){  
+    // clear  
+    ctx.clearRect(0,0,canvas.width,canvas.height);  
+  
+    // background  
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';  
+    roundRect(ctx, 0, 0, canvas.width, canvas.height, 8, true, false);  
+  
+    // grid - optional subtle lines  
+    ctx.strokeStyle = 'rgba(255,255,255,0.02)';  
+    ctx.lineWidth = 1;  
+    for(let i=1;i<grid;i++){  
+      // vertical  
+      ctx.beginPath();  
+      ctx.moveTo(i*cellSize,0);  
+      ctx.lineTo(i*cellSize,canvas.height);  
+      ctx.stroke();  
+      // horizontal  
+      ctx.beginPath();  
+      ctx.moveTo(0,i*cellSize);  
+      ctx.lineTo(canvas.width,i*cellSize);  
+      ctx.stroke();  
+    }  
+  
+    //  
+</body>  
+</html>  
