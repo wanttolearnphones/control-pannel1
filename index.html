@@ -306,4 +306,30 @@
       <img id="authPreview" class="profile-pic" src="">
       <div style="flex:1">
         <h2 class="auth-title" id="authTitle">Welcome</h2>
-        <div class="small" id="authSubtitle
+        <div class="small" id="authSubtitle">Sign up or log in to continue</div>
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <input id="authUser" placeholder="Username (no spaces)" autocomplete="username" />
+      <input id="authPass" placeholder="Password" type="password" autocomplete="current-password" />
+      <input id="authBio" placeholder="Short bio (optional)" />
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+        <input id="authPic" type="file" accept="image/*" />
+        <button id="previewClear" class="btn alt">Clear Pic</button>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button id="signupBtn" class="btn">Sign Up</button>
+        <button id="loginBtn" class="btn alt">Login</button>
+        <button id="demoBtn" class="btn" title="create a demo user (empty)">Demo</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="closeAuth" class="btn alt">Close (if logged in)</button>
+        <button id="forgotBtn" class="btn" title="Not secure — local-only">Forgot pw?</button>
+      </div>
+      <div id="authMessage" class="small" style="margin-top:12px;color:#f7c6c6"></div>
+    </div>
+  </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
