@@ -1,3 +1,4 @@
+
 <!doctype html>
 
 <html lang="en">
@@ -11,7 +12,6 @@
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:Inter,Segoe UI,Roboto,Arial,system-ui;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
-  /* FIX: Corrected the background variable from '—bg' to '--bg' */
   header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(4px)}
   h1{margin:0;font-size:1.05rem}
   .top-actions{display:flex;gap:8px}
@@ -161,31 +161,18 @@
 
 <section id="tab-streaming">
   <h2>Streaming</h2>
-  <div class="card">
-    <h3 class="small">Load a YouTube or Spotify video</h3>
-    <input id="videoUrlInput" placeholder="Paste YouTube or Spotify URL here" style="margin-top:8px;">
-    <p class="small" style="margin-top:4px">
-      * For YouTube, use a URL like `https://www.youtube.com/watch?v=...`<br>
-      * For Spotify, use a URL like `https://open.spotify.com/embed/track/...`
-    </p>
-    <button class="btn" id="loadStreamBtn" style="margin-top:8px;">Load Video</button>
-  </div>
-
   <div class="stream-player-container">
-    <h3 class="small">YouTube Video Player</h3>
+    <h3 class="small">YouTube Music</h3>
     <iframe
-      id="youtubePlayer"
-      src="https://www.youtube.com/embed/jNQXAC9IVRw?rel=0"
+      src="https://www.youtube.com/embed/videoseries?list=PL46f1gXlq-s8V4h-7Y7M1v4B4B9z4X34G"
       allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
       allowfullscreen
     ></iframe>
   </div>
-  
   <div class="stream-player-container">
-    <h3 class="small">Spotify Player</h3>
+    <h3 class="small">Spotify</h3>
     <iframe
-      id="spotifyPlayer"
-      src=""
+      src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYbm5M?utm_source=generator"
       allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
       loading="lazy"
     ></iframe>
@@ -513,6 +500,7 @@ function renderSignedInUI(userObj){
   $('asideBio').textContent = userObj.bio || '';
   $('asidePic').src = userObj.pic || '';
   $('profilePic').src = userObj.pic || '';
+  $('profileName').textContent = currentUser;
   $('profileJoined').textContent = 'Joined: ' + new Date(userObj.joined).toLocaleDateString();
 }
 
@@ -631,37 +619,6 @@ function loadStopwatchState(){ const s = userGet('sw_state', null); if(s){ swEla
 /* ------------------ Music ------------------ */
 $('playFileBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const f = $('musicFile').files[0]; if(!f) return alert('Choose audio file'); const url = URL.createObjectURL(f); $('musicPlayer').src = url; $('musicPlayer').play(); });
 
-/* ------------------ Streaming (NEW) ------------------ */
-$('loadStreamBtn').addEventListener('click', () => {
-  const url = $('videoUrlInput').value.trim();
-  if (!url) {
-    alert('Please enter a valid URL.');
-    return;
-  }
-  
-  if (url.includes('youtube.com') || url.includes('youtu.be')) {
-    const videoIdMatch = url.match(/(?:\?v=|\/embed\/|\/watch\?v=|\/shorts\/|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
-    if (videoIdMatch && videoIdMatch[1]) {
-      const videoId = videoIdMatch[1];
-      const embedUrl = `https://www.youtube.com/embed/${videoId}`;
-      $('youtubePlayer').src = embedUrl;
-    } else {
-      alert('Could not find a valid YouTube video ID in that URL.');
-    }
-  /* FIX: Corrected Spotify URL handling */
-  } else if (url.includes('open.spotify.com/track')) {
-    const trackIdMatch = url.match(/track\/([a-zA-Z0-9]{22})/);
-    if (trackIdMatch && trackIdMatch[1]) {
-      const trackId = trackIdMatch[1];
-      const embedUrl = `https://open.spotify.com/embed/track/${trackId}`;
-      $('spotifyPlayer').src = embedUrl;
-    } else {
-      alert('Could not find a valid Spotify track ID in that URL.');
-    }
-  } else {
-    alert('Unsupported URL. Please use a YouTube or Spotify URL.');
-  }
-});
 /* ------------------ Mood ------------------ */
 $('saveMoodBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const mood = $('moodSelect').value, note = $('moodNote').value.trim(); const arr = userGet('moods', []); arr.unshift({ id: Date.now(), mood, note, t: new Date().toISOString() }); userSet('moods', arr); $('moodNote').value=''; renderMoodHistory(); renderStats(); });
 function renderMoodHistory(){ const arr = userGet('moods', []); $('moodHistory').innerHTML = arr.map(m => `<div class="card"><div style="display:flex;justify-content:space-between"><div>${escapeHtml(m.mood)} ${escapeHtml(m.note||'')}</div><small class="small">${new Date(m.t).toLocaleString()}</small></div></div>`).join(''); }
@@ -923,11 +880,11 @@ $('logoutBtnAside')?.addEventListener('click', logout);
 function escapeHtml(str){
   if(!str) return '';
   return String(str)
-    .replace(/&/g, '&')
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
-    .replace(/"/g, '"')
-    .replace(/'/g, ''');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 /* initial draws */
@@ -1098,7 +1055,6 @@ renderChat();
 
     // background
     ctx.fillStyle = 'rgba(0,0,0,0.25)';
-    /* FIX: Changed to call the newly defined roundRect function */
     roundRect(ctx, 0, 0, canvas.width, canvas.height, 8);
 
     // grid - optional subtle lines
@@ -1185,7 +1141,7 @@ renderChat();
     ctx.fill();
   }
 
-  /* FIX: Added the missing roundRect function */
+  // This is used to draw the background and was missing from the original code, causing a ReferenceError.
   function roundRect(ctx, x, y, width, height, radius) {
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
