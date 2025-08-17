@@ -72,11 +72,6 @@
     <button data-tab="backgrounds">Backgrounds</button>
     <button data-tab="profile">Profile</button>
   </nav>
-<div id="gamesPanel" class="panel hidden">
-  <h2>🎮 Mini Games</h2>
-  <button onclick="startSnake()">Play Snake</button>
-  <canvas id="gameCanvas" width="300" height="300"></canvas>
-</div>
   <main>
     <!-- Dashboard -->
     <section id="tab-dashboard" class="active">
@@ -840,5 +835,223 @@ renderStats();
 renderChat();
 
 </script>
+<!-- --- Mini Games: Snake (self-contained) --- -->
+<style>
+  /* Put this in your main CSS if you prefer; kept small for copy-paste */
+  #gamesPanel { padding:20px; color:var(--text,#e6eef8); font-family:system-ui,-apple-system,Segoe UI,Roboto; }
+  #snakeWrap { max-width:480px; margin:10px 0; background:rgba(255,255,255,0.02); padding:16px; border-radius:12px; box-shadow:0 6px 14px rgba(0,0,0,0.5); }
+  #snakeHeader { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  #snakeCanvas { width:100%; height:auto; background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.55)); border-radius:8px; display:block; margin-top:12px; touch-action: none; }
+  .snakeControls { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }
+  .btn { padding:8px 12px; border-radius:16px; background:linear-gradient(90deg,#7a4dff,#b36bff); color:white; border:none; cursor:pointer; font-weight:600; }
+  .small { padding:6px 10px; font-size:13px; border-radius:12px; }
+  #snakeScore { font-weight:700; }
+  #snakeInfo { opacity:0.8; font-size:13px; }
+</style>
+
+<div id="gamesPanel" class="panel">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span style="font-size:26px">🎮 Mini Games</span>
+  </div>
+
+  <div id="snakeWrap" role="region" aria-label="Snake Game">
+    <div id="snakeHeader">
+      <div>
+        <div style="font-size:18px;font-weight:700">Snake</div>
+        <div id="snakeInfo">Use arrow keys or swipe to play. Eat apples to grow.</div>
+      </div>
+      <div style="text-align:right">
+        <div id="snakeScore">Score: 0</div>
+        <div id="snakeHigh" style="opacity:0.8;font-size:13px">High: 0</div>
+      </div>
+    </div>
+
+    <canvas id="snakeCanvas" width="360" height="360"></canvas>
+
+    <div class="snakeControls">
+      <button id="snakeStart" class="btn">Start</button>
+      <button id="snakePause" class="btn small">Pause</button>
+      <button id="snakeReset" class="btn small">Restart</button>
+      <button id="snakeClose" class="btn small" style="background:transparent;border:1px solid rgba(255,255,255,0.06)">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // Config
+  const canvas = document.getElementById('snakeCanvas');
+  const ctx = canvas.getContext('2d');
+  const startBtn = document.getElementById('snakeStart');
+  const pauseBtn = document.getElementById('snakePause');
+  const resetBtn = document.getElementById('snakeReset');
+  const closeBtn = document.getElementById('snakeClose');
+  const scoreEl = document.getElementById('snakeScore');
+  const highEl = document.getElementById('snakeHigh');
+
+  // Responsive canvas: keep square and adjust to container
+  function resizeCanvas(){
+    const rect = canvas.getBoundingClientRect();
+    const size = Math.min(480, rect.width); // limit max size
+    canvas.width = size;
+    canvas.height = size;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  // Game state
+  let grid = 18;            // number of cells per row/col
+  let cellSize = 0;
+  let snake = [];
+  let dir = {x:1,y:0};
+  let nextDir = null;
+  let apple = null;
+  let running = false;
+  let paused = false;
+  let intervalId = null;
+  let speed = 100; // ms per tick (lower = faster)
+  let score = 0;
+  let high = Number(localStorage.getItem('rcp_snake_high') || 0);
+
+  highEl.textContent = 'High: ' + high;
+
+  function startGame(){
+    cancelTick();
+    grid = Math.max(12, Math.floor(canvas.width/20)); // scale grid to canvas size
+    cellSize = Math.floor(canvas.width / grid);
+    snake = [{x: Math.floor(grid/2), y: Math.floor(grid/2)}];
+    dir = {x:1,y:0};
+    nextDir = null;
+    spawnApple();
+    running = true;
+    paused = false;
+    score = 0;
+    scoreEl.textContent = 'Score: ' + score;
+    intervalId = setInterval(tick, speed);
+    draw();
+  }
+
+  function pauseGame(){
+    if(!running) return;
+    paused = !paused;
+    if(paused) cancelTick(); else intervalId = setInterval(tick, speed);
+    pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+  }
+
+  function resetGame(){
+    startGame();
+  }
+
+  function closeGame(){
+    cancelTick();
+    running = false;
+    paused = false;
+    // optionally hide panel — if you want to hide instead, your app can add logic here
+    // document.getElementById('gamesPanel').classList.add('hidden');
+  }
+
+  function cancelTick(){
+    if(intervalId) { clearInterval(intervalId); intervalId = null; }
+  }
+
+  function spawnApple(){
+    let tries = 0;
+    while(true){
+      tries++;
+      const ax = Math.floor(Math.random()*grid);
+      const ay = Math.floor(Math.random()*grid);
+      if(!snake.some(s => s.x===ax && s.y===ay)){
+        apple = {x:ax,y:ay};
+        return;
+      }
+      if(tries>200) { apple = null; return; }
+    }
+  }
+
+  function tick(){
+    if(!running || paused) return;
+    if(nextDir){
+      // prevent immediate reverse
+      if(!(nextDir.x === -dir.x && nextDir.y === -dir.y)) dir = nextDir;
+      nextDir = null;
+    }
+
+    const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+
+    // wrap-around (change to collision with walls if you prefer)
+    if(head.x < 0) head.x = grid - 1;
+    if(head.y < 0) head.y = grid - 1;
+    if(head.x >= grid) head.x = 0;
+    if(head.y >= grid) head.y = 0;
+
+    // collision with self?
+    if(snake.some(s => s.x === head.x && s.y === head.y)){
+      gameOver();
+      return;
+    }
+
+    snake.unshift(head);
+
+    // apple eaten?
+    if(apple && head.x === apple.x && head.y === apple.y){
+      score += 1;
+      scoreEl.textContent = 'Score: ' + score;
+      spawnApple();
+      // speed up slightly every 5 apples
+      if(score % 5 === 0 && speed > 40){
+        speed = Math.max(40, speed - 8);
+        cancelTick();
+        intervalId = setInterval(tick, speed);
+      }
+    } else {
+      snake.pop();
+    }
+
+    draw();
+  }
+
+  function gameOver(){
+    running = false;
+    cancelTick();
+    // save high score
+    if(score > high){
+      high = score;
+      localStorage.setItem('rcp_snake_high', String(high));
+      highEl.textContent = 'High: ' + high;
+    }
+    // simple game over effect
+    for(let i=0;i<3;i++){
+      // blink canvas quickly
+      setTimeout(()=>{ canvas.style.opacity = i%2?0.3:1; }, i*120);
+    }
+    setTimeout(()=>{ canvas.style.opacity = 1; }, 360);
+    // keep last state drawn, user can restart
+  }
+
+  function draw(){
+    // clear
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // background
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    roundRect(ctx, 0, 0, canvas.width, canvas.height, 8, true, false);
+
+    // grid - optional subtle lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+    ctx.lineWidth = 1;
+    for(let i=1;i<grid;i++){
+      // vertical
+      ctx.beginPath();
+      ctx.moveTo(i*cellSize,0);
+      ctx.lineTo(i*cellSize,canvas.height);
+      ctx.stroke();
+      // horizontal
+      ctx.beginPath();
+      ctx.moveTo(0,i*cellSize);
+      ctx.lineTo(canvas.width,i*cellSize);
+      ctx.stroke();
+    }
+
+    //
 </body>
 </html>
