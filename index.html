@@ -1,48 +1,66 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Ritters OS — Full Demo</title>
+<title>Ritters OS — Enhanced Demo</title>
 <style>
-  :root{
-    --bg:#071018; --panel:rgba(255,255,255,0.03); --accent:#7b5cff; --muted:#9fb0c8; --text:#e9f2ff;
+  :root {
+    /* Dark Theme (Default) */
+    --bg: #071018;
+    --panel: rgba(255, 255, 255, 0.03);
+    --accent: #7b5cff;
+    --muted: #9fb0c8;
+    --text: #e9f2ff;
+    --panel-shadow: rgba(0, 0, 0, 0.35);
+    --btn-alt-bg: #24303a;
   }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,Segoe UI,Roboto,Arial,system-ui;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
-  header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(4px)}
-  h1{margin:0;font-size:1.05rem}
-  .top-actions{display:flex;gap:8px}
-  .btn{background:var(--accent);border:none;padding:8px 12px;border-radius:10px;color:#fff;cursor:pointer;font-weight:600;box-shadow:0 6px 18px rgba(123,92,255,0.12)}
-  .btn.alt{background:#24303a}
-  .layout{display:grid;grid-template-columns:240px 1fr 320px;gap:16px;padding:18px;flex:1}
-  nav{background:var(--panel);padding:12px;border-radius:12px;height:calc(100vh - 120px);overflow:auto}
-  nav button{display:block;width:100%;text-align:left;padding:10px;border-radius:8px;border:none;background:transparent;color:var(--text);cursor:pointer;margin-bottom:8px;font-weight:600}
-  nav button.active{background:linear-gradient(90deg, rgba(123,92,255,0.14), rgba(123,92,255,0.06));}
-  main{background:var(--panel);padding:14px;border-radius:12px;min-height:400px;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,0.35)}
-  aside{background:var(--panel);padding:14px;border-radius:12px;height:calc(100vh - 120px);overflow:auto}
-  section{display:none}
-  section.active{display:block}
-  .card{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;margin-bottom:12px;box-shadow:0 4px 14px rgba(0,0,0,0.2)}
-  input,textarea,select{width:100%;padding:10px;border-radius:8px;border:none;background:rgba(255,255,255,0.02);color:var(--text);margin-top:8px;font-size:0.95rem}
-  textarea{min-height:90px}
-  .profile-pic{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.04)}
-  .small{font-size:0.9rem;color:var(--muted)}
-  .laps{max-height:160px;overflow:auto;padding:6px;background:rgba(255,255,255,0.02);border-radius:8px;margin-top:8px}
-  footer{padding:12px;text-align:center;color:var(--muted);font-size:0.85rem}
-  .modal-backdrop{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,10,0.6), rgba(2,6,10,0.6));z-index:9999}
-  .auth-card{width:100%;max-width:620px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:22px;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,0.7)}
-  .auth-top{display:flex;gap:12px;align-items:center}
-  .auth-title{font-size:1.2rem;margin:0}
-  @media(max-width:1000px){.layout{grid-template-columns:1fr;grid-auto-rows:min-content}aside{order:3;padding-bottom:60px} nav{height:auto}}
-  /* messages */
-  .msg-list{max-height:260px;overflow:auto;padding:8px;background:rgba(255,255,255,0.02);border-radius:8px}
-  .msg{margin-bottom:8px;padding:6px;border-radius:6px;background:rgba(0,0,0,0.04)}
-  /* live background preview */
-  .bg-preview{width:100%;height:160px;border-radius:8px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,0.03)}
-  /* small search area */
-  .search-results{margin-top:10px}
+  .light-theme {
+    /* Light Theme */
+    --bg: #f0f4f8;
+    --panel: rgba(0, 0, 0, 0.05);
+    --accent: #5a3dcf;
+    --muted: #667e9c;
+    --text: #1d2b3c;
+    --panel-shadow: rgba(0, 0, 0, 0.1);
+    --btn-alt-bg: #e0e6ec;
+  }
+  * { box-sizing: border-box }
+  body { margin: 0; font-family: Inter, Segoe UI, Roboto, Arial, system-ui; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; transition: background 0.3s ease, color 0.3s ease; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); backdrop-filter: blur(4px); transition: background 0.3s ease; }
+  h1 { margin: 0; font-size: 1.05rem }
+  .top-actions { display: flex; gap: 8px }
+  .btn { background: var(--accent); border: none; padding: 8px 12px; border-radius: 10px; color: #fff; cursor: pointer; font-weight: 600; box-shadow: 0 6px 18px rgba(123, 92, 255, 0.12); transition: all 0.2s ease-in-out; }
+  .btn.alt { background: var(--btn-alt-bg); box-shadow: none; }
+  .layout { display: grid; grid-template-columns: 240px 1fr 320px; gap: 16px; padding: 18px; flex: 1; }
+  nav { background: var(--panel); padding: 12px; border-radius: 12px; height: calc(100vh - 120px); overflow: auto; transition: background 0.3s ease; }
+  nav button { display: block; width: 100%; text-align: left; padding: 10px; border-radius: 8px; border: none; background: transparent; color: var(--text); cursor: pointer; margin-bottom: 8px; font-weight: 600; transition: background 0.2s ease, color 0.2s ease; }
+  nav button.active { background: linear-gradient(90deg, rgba(123, 92, 255, 0.14), rgba(123, 92, 255, 0.06)); }
+  nav button.active:hover { background: linear-gradient(90deg, rgba(123, 92, 255, 0.2), rgba(123, 92, 255, 0.08)); }
+  main { background: var(--panel); padding: 14px; border-radius: 12px; min-height: 400px; overflow: auto; box-shadow: 0 8px 30px var(--panel-shadow); transition: background 0.3s ease, box-shadow 0.3s ease; }
+  aside { background: var(--panel); padding: 14px; border-radius: 12px; height: calc(100vh - 120px); overflow: auto; transition: background 0.3s ease; }
+  section { display: none }
+  section.active { display: block }
+  .card { background: rgba(255, 255, 255, 0.02); padding: 12px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2); transition: background 0.3s ease, box-shadow 0.3s ease; }
+  .light-theme .card { background: rgba(0, 0, 0, 0.02); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1); }
+  input,textarea,select { width: 100%; padding: 10px; border-radius: 8px; border: none; background: rgba(255, 255, 255, 0.02); color: var(--text); margin-top: 8px; font-size: 0.95rem; transition: background 0.3s ease, color 0.3s ease; }
+  .light-theme input, .light-theme textarea, .light-theme select { background: rgba(0, 0, 0, 0.04); }
+  textarea { min-height: 90px }
+  .profile-pic { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255, 255, 255, 0.04); }
+  .small { font-size: 0.9rem; color: var(--muted); }
+  .laps { max-height: 160px; overflow: auto; padding: 6px; background: rgba(255, 255, 255, 0.02); border-radius: 8px; margin-top: 8px; }
+  footer { padding: 12px; text-align: center; color: var(--muted); font-size: 0.85rem; }
+  .modal-backdrop { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(rgba(2, 6, 10, 0.6), rgba(2, 6, 10, 0.6)); z-index: 9999; }
+  .auth-card { width: 100%; max-width: 620px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01)); padding: 22px; border-radius: 14px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7); }
+  .auth-top { display: flex; gap: 12px; align-items: center }
+  .auth-title { font-size: 1.2rem; margin: 0 }
+  @media(max-width:1000px){ .layout{ grid-template-columns: 1fr; grid-auto-rows: min-content } aside{ order: 3; padding-bottom: 60px } nav{ height: auto } }
+  .msg-list { max-height: 260px; overflow: auto; padding: 8px; background: rgba(255, 255, 255, 0.02); border-radius: 8px; }
+  .msg { margin-bottom: 8px; padding: 6px; border-radius: 6px; background: rgba(0, 0, 0, 0.04); }
+  .bg-preview { width: 100%; height: 160px; border-radius: 8px; background-size: cover; background-position: center; border: 1px solid rgba(255, 255, 255, 0.03); }
+  .search-results { margin-top: 10px }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -97,6 +115,7 @@
       <h2>Journal</h2>
       <input id="journalTitle" placeholder="Title">
       <textarea id="journalBody" rows="6" placeholder="Write..."></textarea>
+      <input type="hidden" id="journalId">
       <div style="display:flex;gap:8px;margin-top:8px">
         <button class="btn" id="saveJournalBtn">Save Entry</button>
         <button class="btn alt" id="clearJournalBtn">Clear All</button>
@@ -109,6 +128,7 @@
       <h2>Notes</h2>
       <input id="noteTitle" placeholder="Note title">
       <textarea id="noteBody" rows="4" placeholder="Your note..."></textarea>
+      <input type="hidden" id="noteId">
       <div style="display:flex;gap:8px;margin-top:8px">
         <button class="btn" id="saveNoteBtn">Save Note</button>
         <button class="btn alt" id="clearNotesBtn">Clear All</button>
@@ -163,7 +183,11 @@
         <input id="moodNote" placeholder="Optional note...">
         <button class="btn" id="saveMoodBtn">Save Mood</button>
       </div>
-      <h4 style="margin-top:12px">Mood History</h4>
+      <div class="card" style="margin-top:12px">
+        <h4 style="margin-top:0">Mood History Chart</h4>
+        <canvas id="moodChart" width="100%" height="200"></canvas>
+      </div>
+      <h4 style="margin-top:12px">Mood History List</h4>
       <div id="moodHistory"></div>
     </section>
 
@@ -312,6 +336,7 @@
    - Demo messages (localStorage)
    - Live backgrounds saved
    - All apps working locally
+   - Now with edit features and mood chart
 --------------------------- */
 
 /* CONFIG */
@@ -326,6 +351,7 @@ function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
 function ukey(k){ return `${currentUser}::${k}`; }
 function userGet(k, fallback){ try { return JSON.parse(localStorage.getItem(ukey(k)) || JSON.stringify(fallback)); } catch(e){ return fallback; } }
 function userSet(k, value){ localStorage.setItem(ukey(k), JSON.stringify(value)); }
+function escapeHtml(str){ if(!str) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); }
 
 /* HASH password using SubtleCrypto SHA-256 -> hex */
 async function hashPassword(pw){
@@ -369,9 +395,7 @@ $('logoutBtnAside')?.addEventListener('click', logout);
 
 /* theme toggle */
 $('themeToggle').addEventListener('click', ()=>{
-  const curBg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
-  if(curBg === '#fff'){ document.documentElement.style.setProperty('--bg','#071018'); document.documentElement.style.setProperty('--text','#e9f2ff'); }
-  else { document.documentElement.style.setProperty('--bg','#fff'); document.documentElement.style.setProperty('--text','#111'); }
+  document.body.classList.toggle('light-theme');
 });
 
 /* auth actions */
@@ -456,9 +480,21 @@ function renderJournalList(){
         <small class="small">${new Date(item.created).toLocaleString()}</small>
       </div>
       <div style="margin-top:8px">${escapeHtml(item.body||'').replace(/\n/g,'<br>')}</div>
-      <div style="margin-top:8px"><button class="btn alt" onclick="deleteJournal(${item.id})">Delete</button></div>
+      <div style="margin-top:8px">
+        <button class="btn alt" onclick="editJournal(${item.id})">Edit</button>
+        <button class="btn alt" onclick="deleteJournal(${item.id})">Delete</button>
+      </div>
     </div>
   `).join('');
+}
+window.editJournal = function(id){
+    const entry = userGet('journal', []).find(item => item.id === id);
+    if(entry) {
+        $('journalTitle').value = entry.title;
+        $('journalBody').value = entry.body;
+        $('journalId').value = id;
+        navTo('journal');
+    }
 }
 window.deleteJournal = function(id){
   if(!currentUser){ alert('Log in first'); return; }
@@ -470,9 +506,17 @@ $('saveJournalBtn').addEventListener('click', ()=>{
   if(!currentUser){ alert('Log in first'); return; }
   const title = $('journalTitle').value.trim(), body = $('journalBody').value.trim();
   if(!title && !body){ alert('Write something'); return; }
-  const arr = userGet('journal', []); arr.unshift({ id: Date.now(), title, body, created: new Date().toISOString() });
+  let arr = userGet('journal', []);
+  const id = $('journalId').value;
+  if(id) {
+    // Update existing entry
+    arr = arr.map(i => i.id == id ? { ...i, title, body } : i);
+  } else {
+    // Add new entry
+    arr.unshift({ id: Date.now(), title, body, created: new Date().toISOString() });
+  }
   userSet('journal', arr);
-  $('journalTitle').value=''; $('journalBody').value='';
+  $('journalTitle').value=''; $('journalBody').value=''; $('journalId').value='';
   renderJournalList(); renderStats();
 });
 $('clearJournalBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(confirm('Clear all journal entries?')){ userSet('journal', []); renderJournalList(); renderStats(); } });
@@ -484,9 +528,21 @@ function renderNotesList(){
     <div class="card">
       <div style="display:flex;justify-content:space-between"><strong>${escapeHtml(n.t)||'(no title)'}</strong><small class="small">${new Date(n.created).toLocaleString()}</small></div>
       <div style="margin-top:8px">${escapeHtml(n.b||'').replace(/\n/g,'<br>')}</div>
-      <div style="margin-top:8px"><button class="btn alt" onclick="deleteNote(${n.id})">Delete</button></div>
+      <div style="margin-top:8px">
+        <button class="btn alt" onclick="editNote(${n.id})">Edit</button>
+        <button class="btn alt" onclick="deleteNote(${n.id})">Delete</button>
+      </div>
     </div>
   `).join('');
+}
+window.editNote = function(id){
+    const entry = userGet('notes', []).find(item => item.id === id);
+    if(entry) {
+        $('noteTitle').value = entry.t;
+        $('noteBody').value = entry.b;
+        $('noteId').value = id;
+        navTo('notes');
+    }
 }
 window.deleteNote = function(id){
   if(!currentUser) return alert('Log in first');
@@ -498,9 +554,17 @@ $('saveNoteBtn').addEventListener('click', ()=>{
   if(!currentUser) return alert('Log in first');
   const t = $('noteTitle').value.trim(), b = $('noteBody').value.trim();
   if(!t && !b) return alert('Write a note.');
-  const arr = userGet('notes', []); arr.unshift({ id: Date.now(), t, b, created: new Date().toISOString() });
+  let arr = userGet('notes', []);
+  const id = $('noteId').value;
+  if(id) {
+    // Update existing entry
+    arr = arr.map(i => i.id == id ? { ...i, t, b } : i);
+  } else {
+    // Add new entry
+    arr.unshift({ id: Date.now(), t, b, created: new Date().toISOString() });
+  }
   userSet('notes', arr);
-  $('noteTitle').value=''; $('noteBody').value='';
+  $('noteTitle').value=''; $('noteBody').value=''; $('noteId').value='';
   renderNotesList(); renderStats();
 });
 $('clearNotesBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); if(confirm('Clear all notes?')){ userSet('notes', []); renderNotesList(); renderStats(); } });
@@ -549,7 +613,84 @@ function loadStopwatchState(){ const s = userGet('sw_state', null); if(s){ swEla
 $('playFileBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const f = $('musicFile').files[0]; if(!f) return alert('Choose audio file'); const url = URL.createObjectURL(f); $('musicPlayer').src = url; $('musicPlayer').play(); });
 
 /* ------------------ Mood ------------------ */
-$('saveMoodBtn').addEventListener('click', ()=>{ if(!currentUser) return alert('Log in first'); const mood = $('moodSelect').value, note = $('moodNote').value.trim(); const arr = userGet('moods', []); arr.unshift({ id: Date.now(), mood, note, t: new Date().toISOString() }); userSet('moods', arr); $('moodNote').value=''; renderMoodHistory(); renderStats(); });
+let moodChartInstance = null;
+function renderMoodChart() {
+    const moods = userGet('moods', []);
+    const moodCounts = {};
+    const moodLabels = {
+        '😁': 'Happy',
+        '🙂': 'Fine',
+        '😐': 'Meh',
+        '😔': 'Sad',
+        '😡': 'Angry',
+        '😴': 'Tired'
+    };
+    const moodColors = {
+        '😁': '#4CAF50',
+        '🙂': '#8BC34A',
+        '😐': '#FFEB3B',
+        '😔': '#FF9800',
+        '😡': '#F44336',
+        '😴': '#9E9E9E'
+    };
+    
+    // Reverse mood array for chronological order
+    const reversedMoods = [...moods].reverse();
+
+    reversedMoods.forEach(m => {
+        const date = new Date(m.t).toLocaleDateString();
+        if (!moodCounts[date]) moodCounts[date] = {};
+        moodCounts[date][m.mood] = (moodCounts[date][m.mood] || 0) + 1;
+    });
+
+    const chartLabels = Object.keys(moodCounts);
+    const chartData = {};
+    Object.keys(moodLabels).forEach(emoji => {
+        chartData[emoji] = chartLabels.map(date => moodCounts[date][emoji] || 0);
+    });
+
+    if (moodChartInstance) {
+        moodChartInstance.destroy();
+    }
+
+    const ctx = $('moodChart').getContext('2d');
+    moodChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartLabels,
+            datasets: Object.keys(chartData).map(emoji => ({
+                label: moodLabels[emoji],
+                data: chartData[emoji],
+                backgroundColor: moodColors[emoji],
+            }))
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    stacked: true,
+                    grid: { color: 'rgba(255,255,255,0.05)' }
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.05)' }
+                }
+            }
+        }
+    });
+}
+$('saveMoodBtn').addEventListener('click', ()=>{ 
+  if(!currentUser) return alert('Log in first'); 
+  const mood = $('moodSelect').value, note = $('moodNote').value.trim(); 
+  const arr = userGet('moods', []); arr.unshift({ id: Date.now(), mood, note, t: new Date().toISOString() }); 
+  userSet('moods', arr); 
+  $('moodNote').value=''; 
+  renderMoodHistory(); 
+  renderMoodChart();
+  renderStats(); 
+});
 function renderMoodHistory(){ const arr = userGet('moods', []); $('moodHistory').innerHTML = arr.map(m => `<div class="card"><div style="display:flex;justify-content:space-between"><div>${escapeHtml(m.mood)} ${escapeHtml(m.note||'')}</div><small class="small">${new Date(m.t).toLocaleString()}</small></div></div>`).join(''); }
 renderMoodHistory();
 
@@ -618,9 +759,7 @@ function applyBgChoice(v){
   if(v === 'space') document.body.style.background = "url('https://picsum.photos/1600/1000?image=1050') center/cover no-repeat";
   else if(v === 'nature') document.body.style.background = "url('https://picsum.photos/1600/1000?image=1025') center/cover no-repeat";
   else if(v === 'video'){
-    // simple animated gradient fallback (video embedding would need CORS or local file)
     document.body.style.background = "linear-gradient(120deg,#071018,#06283d)";
-    // optional: you can place a <video> element behind layout for local files
   }
   else if(v === 'solid') document.body.style.background = "#071018";
   else document.body.style.background = "linear-gradient(120deg,#071018,#0b1b2a)";
@@ -790,7 +929,7 @@ function renderStats(){
 
 /* ------------------ LOAD / BOOT ------------------ */
 function renderAllUserData(){
-  renderJournalList(); renderNotesList(); renderEvents(); renderLaps(); renderMoodHistory(); renderStats(); loadStopwatchState(); renderChat();
+  renderJournalList(); renderNotesList(); renderEvents(); renderLaps(); renderMoodHistory(); renderStats(); loadStopwatchState(); renderChat(); renderMoodChart();
 }
 function loadStopwatchState(){
   const s = userGet('sw_state', null);
@@ -805,21 +944,11 @@ $('logoutBtnAside')?.addEventListener('click', logout);
   localStorage.setItem = function(k,v){ orig.apply(this, arguments); try{ renderStats(); }catch(e){} };
 })();
 
-/* small helper to escape HTML */
-function escapeHtml(str){
-  if(!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
 /* initial draws */
 renderMoodHistory();
 renderStats();
 renderChat();
+renderMoodChart();
 
 </script>
 <style>
@@ -1071,7 +1200,7 @@ renderChat();
     ctx.lineTo(x + width - radius.tr, y);
     ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
     ctx.lineTo(x + width, y + height - radius.br);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+    ctx.quadraticCurveCurveTo(x + width, y + height, x + width - radius.br, y + height);
     ctx.lineTo(x + radius.bl, y + height);
     ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
     ctx.lineTo(x, y + radius.tl);
