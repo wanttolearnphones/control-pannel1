@@ -72,7 +72,11 @@
     <button data-tab="backgrounds">Backgrounds</button>
     <button data-tab="profile">Profile</button>
   </nav>
-
+<div id="gamesPanel" class="panel hidden">
+  <h2>🎮 Mini Games</h2>
+  <button onclick="startSnake()">Play Snake</button>
+  <canvas id="gameCanvas" width="300" height="300"></canvas>
+</div>
   <main>
     <!-- Dashboard -->
     <section id="tab-dashboard" class="active">
